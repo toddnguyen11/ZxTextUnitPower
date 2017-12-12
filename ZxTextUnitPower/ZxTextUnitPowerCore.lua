@@ -57,7 +57,7 @@ end
 
 
 local function init(_, _, name)
-	if (name ~= "ZxTextUnitFrame") then return; end
+	if (name ~= "ZxTextUnitPower") then return; end
 
 	r, g, b = getRgb()
 
