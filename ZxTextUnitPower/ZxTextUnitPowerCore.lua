@@ -64,7 +64,7 @@ local function init(_, _, name)
 	ZxMasterFrame = CreateFrame("Frame", "ZxMasterFrame", UIParent)
 	
 	ZxMasterFrame.MainFrame = CreateFrame("Frame", "MainFrame", ZxMasterFrame)
-	ZxMasterFrame.MainFrame:SetSize(50,25)
+	ZxMasterFrame.MainFrame:SetSize(70,25)
 	ZxMasterFrame.MainFrame:SetPoint("BOTTOMLEFT", PlayerFrame, "TOP", -20, -20)
 	ZxMasterFrame.MainFrame:SetMovable(true)
 	ZxMasterFrame.MainFrame:EnableMouse(true)
