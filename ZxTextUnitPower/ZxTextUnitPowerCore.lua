@@ -38,48 +38,76 @@ local function registerForEvents(unitInput)
 	ZxMasterFrame.MainFrame:RegisterEvent(unitInput)
 end
 
+-- Wrapper function to color texture
+local function drawTexture()
+	r, g, b = getRgb();
+	ZxMasterFrame.MainFrame.texture1:SetTexture(r, g, b, 0.6);
+	ZxMasterFrame.MainFrame.texture1:SetAllPoints();
+end
 
-function createUnitDisplay()
+powerRegistered = {
+	"UNIT_MANA",
+	"UNIT_RAGE",
+	"UNIT_ENERGY",
+	"UNIT_RUNIC_POWER"
+}
+
+local function hasValue(value)
+	for _, power in pairs(powerRegistered) do
+		if (value == power) then
+			return true;
+		end
+	end
+	
+	return false
+end
+
+local function createUnitDisplay()
+	ZxMasterFrame.MainFrame.texture1 = ZxMasterFrame.MainFrame:CreateTexture(nil, "BACKGROUND")
+	drawTexture()
+	
 	ZxMasterFrame.MainFrame.UnitPowerDisplay = ZxMasterFrame.MainFrame:CreateFontString(nil, "OVERLAY");
 	ZxMasterFrame.MainFrame.UnitPowerDisplay:SetFont("Interface\\AddOns\\ActionBarFont\\ptsans-bold.ttf", 16, "OUTLINE");
 	ZxMasterFrame.MainFrame.UnitPowerDisplay:SetAllPoints();
+	ZxMasterFrame.MainFrame.UnitPowerDisplay:SetText(shortenNumber(UnitPower("Player")));
 
-	registerForEvents("ADDON_LOADED");
-	registerForEvents("UNIT_MANA");
-	registerForEvents("UNIT_RAGE");
-	registerForEvents("UNIT_ENERGY");
-	registerForEvents("UNIT_RUNIC_POWER");
+	for _, power in pairs(powerRegistered) do 
+		registerForEvents(power)
+	end
+
+	registerForEvents("UPDATE_SHAPESHIFT_FORM");
 	
 	ZxMasterFrame.MainFrame:SetScript("OnEvent", function(self, event, unit)
-		ZxMasterFrame.MainFrame.UnitPowerDisplay:SetText(shortenNumber(UnitPower("Player")))
-	end);
+		if (hasValue(event)) then
+			ZxMasterFrame.MainFrame.UnitPowerDisplay:SetText(shortenNumber(UnitPower("Player")));
+		else
+			drawTexture()
+		end
+	end)
 end
 
 
-local function init(_, _, name)
-	if (name ~= "ZxTextUnitPower") then return; end
-
-	r, g, b = getRgb()
-
-	ZxMasterFrame = CreateFrame("Frame", "ZxMasterFrame", UIParent)
+local function init()
+	ZxMasterFrame = CreateFrame("Frame", "ZxMasterFrame", UIParent);
 	
 	ZxMasterFrame.MainFrame = CreateFrame("Frame", "MainFrame", ZxMasterFrame)
 	ZxMasterFrame.MainFrame:SetSize(70,25)
-	ZxMasterFrame.MainFrame:SetPoint("BOTTOMLEFT", PlayerFrame, "TOP", -20, -20)
+	ZxMasterFrame.MainFrame:SetPoint("BOTTOMLEFT", PlayerFrame, "TOP", -20, -15)
 	ZxMasterFrame.MainFrame:SetMovable(true)
 	ZxMasterFrame.MainFrame:EnableMouse(true)
 	ZxMasterFrame.MainFrame:RegisterForDrag("LeftButton")
 	ZxMasterFrame.MainFrame:SetScript("OnDragStart", ZxMasterFrame.MainFrame.StartMoving)
 	ZxMasterFrame.MainFrame:SetScript("OnDragStop", ZxMasterFrame.MainFrame.StopMovingOrSizing)
 
-	ZxMasterFrame.MainFrame.texture1 = ZxMasterFrame.MainFrame:CreateTexture(nil, "BACKGROUND")
-	ZxMasterFrame.MainFrame.texture1:SetTexture(r, g, b, 0.5)
-	ZxMasterFrame.MainFrame.texture1:SetAllPoints()
-
 	createUnitDisplay()
 end
 
 
 local events = CreateFrame("Frame");
-events:RegisterEvent("ADDON_LOADED");
-events:SetScript("OnEvent", init);
+events:RegisterEvent("PLAYER_LOGIN");
+events:SetScript("OnEvent", function(self, event, addonName)
+	if (event == "PLAYER_LOGIN") then
+		init();
+		self:UnregisterEvent("PLAYER_LOGIN");
+	end
+end)
