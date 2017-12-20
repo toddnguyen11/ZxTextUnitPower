@@ -128,6 +128,7 @@ local function createUnitDisplay()
 end
 
 local function getPercentHp()
+	local roundTo = 10.0 * 100.0;
 	local curHp = UnitHealth("Target");
 	local maxHp = UnitHealthMax("Target");
 	local percentHp = nil;
@@ -135,9 +136,13 @@ local function getPercentHp()
 	if (maxHp == 0) then
 		return maxHp;
 	else
-		percentHp = curHp / maxHp * 100;
+		percentHp = curHp / maxHp; -- for more accurate comparisons
+		if (cur ~= 1.0) then
+			percentHp = math.floor(percentHp * roundTo + 0.5) / roundTo;
+		end
 	end
 
+	percentHp = percentHp * 100.0;
 	return percentHp;
 end
 
@@ -151,15 +156,28 @@ local function reverseBar(healthBar, currentHp)
 	healthBar:SetPoint("TOPLEFT", backgroundFrame, "TOPLEFT", tempLocation, 0);
 end
 
-local function createTargetHp()
+local function showComboText(comboTextDisplay)
+	local parent = comboTextDisplay:GetParent();
 	local comboPointsDisplay = 	{
-		"1",
-		"2",
-		"3",
-		"4",
-		"5 !!"
+			"1",
+			"2",
+			"3",
+			"4",
+			"5 !!"
 	}
 	
+	local comboPoints = GetComboPoints("Player", "Target");
+			
+	-- Only display if there IS a combo point
+	if (comboPoints == 0) then
+		parent:Hide();
+	else
+		comboTextDisplay:SetText(comboPointsDisplay[comboPoints]);
+		parent:Show();
+	end
+end
+
+local function createTargetHp()	
 	local bgFrame = CreateFrame("Frame", "ZxCreateTargetHpFrame", ZxMasterFrame);
 	bgFrame:SetWidth(75);
 	bgFrame:SetHeight(20);
@@ -204,11 +222,7 @@ local function createTargetHp()
 				bgFrame:Hide();
 				return;
 			else
-				local comboPoints = GetComboPoints("Player", "Target");
-				if (comboPoints == 0) then
-					bgFrame.comboPointBg:Hide();
-				end
-				
+				showComboText(bgFrame.comboPointBg.comboText);				
 				bgFrame:Show();
 				reverseBar(bgFrame.curHealthBar, tempHp);
 				bgFrame.textHealth:SetText(string.format("%0.1f%%", tempHp))
@@ -221,15 +235,7 @@ local function createTargetHp()
 		end
 		
 		if (event == "UNIT_COMBO_POINTS") then
-			local comboPoints = GetComboPoints("Player", "Target");
-			
-			-- Only display if there IS a combo point
-			if (comboPoints == 0) then
-				bgFrame.comboPointBg:Hide();
-			else
-				bgFrame.comboPointBg.comboText:SetText(comboPointsDisplay[comboPoints]);
-				bgFrame.comboPointBg:Show();
-			end
+			showComboText(bgFrame.comboPointBg.comboText);	
 		end
 	end)
 end
