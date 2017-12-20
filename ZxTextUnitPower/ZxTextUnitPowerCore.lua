@@ -6,6 +6,11 @@ local function enableFrameMovement(frameInput)
 	frameInput:SetScript("OnDragStop", frameInput.StopMovingOrSizing);
 end
 
+local function SetFrameSize(frame, width, height)
+	frame:SetWidth(width);
+	frame:SetHeight(height);
+end
+
 local function createBlackBg(frame, alphaLevel)
 	frame.texture1 = frame:CreateTexture(nil, "BACKGROUND");
 	frame.texture1:SetTexture(0, 0, 0, alphaLevel);
@@ -73,12 +78,16 @@ powerRegistered = {
 	"UNIT_RUNIC_POWER"
 }
 
-local function writePowerValue(value)
+local function writePowerValue()
+	local _, value = UnitPowerType("Player");
 	if (value == "UNIT_MANA" or value == "MANA") then
-		percentage = string.format("%.1f %%", UnitPower("Player")/UnitPowerMax("Player") * 100);
+		local curPower = UnitPower("Player");
+		local maxPower = UnitPowerMax("Player");
+		local perPower = curPower / maxPower * 100;
+		percentage = string.format("%.1f %%", perPower);
 		ZxMasterFrame.MainFrame.UnitPowerDisplay:SetText(percentage);
 	else
-		ZxMasterFrame.MainFrame.UnitPowerDisplay:SetText(shortenNumber(UnitPower("Player")));
+		ZxMasterFrame.MainFrame.UnitPowerDisplay:SetText(UnitPower("Player"));
 	end
 end
 
@@ -100,7 +109,7 @@ local function createUnitDisplay()
 	ZxMasterFrame.MainFrame.UnitPowerDisplay:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE");
 	ZxMasterFrame.MainFrame.UnitPowerDisplay:SetAllPoints();
 	_, unitPType = UnitPowerType("Player")
-	writePowerValue(unitPType)
+	writePowerValue()
 
 	for _, power in pairs(powerRegistered) do 
 		registerForEvents(power)
@@ -109,61 +118,113 @@ local function createUnitDisplay()
 	registerForEvents("UPDATE_SHAPESHIFT_FORM");
 	
 	ZxMasterFrame.MainFrame:SetScript("OnEvent", function(self, event, unit)
-		if (hasValue(event)) then
-			writePowerValue(event);
+		if (not(event == "UPDATE_SHAPESHIFT_FORM")) then
+			writePowerValue();
 		else
-			drawTexture()
+			drawTexture();
+			writePowerValue();
 		end
 	end)
 end
 
+local function getPercentHp()
+	local curHp = UnitHealth("Target");
+	local maxHp = UnitHealthMax("Target");
+	local percentHp = nil;
+	-- Save some calculation cycles
+	if (maxHp == 0) then
+		return maxHp;
+	else
+		percentHp = curHp / maxHp * 100;
+	end
+
+	return percentHp;
+end
+
+local function reverseBar(healthBar, currentHp)
+	backgroundFrame = healthBar:GetParent();
+	healthBar:SetMinMaxValues(0, currentHp);
+	healthBar:ClearAllPoints();
+	healthBar:SetPoint("BOTTOMRIGHT");		
+	local tempWidth = backgroundFrame:GetWidth();
+	local tempLocation = tempWidth - (tempWidth * currentHp / 100.0)
+	healthBar:SetPoint("TOPLEFT", backgroundFrame, "TOPLEFT", tempLocation, 0);
+end
+
 local function createTargetHp()
-	local frame1 = CreateFrame("Frame", "ZxTargetHealth", ZxMasterFrame);
-	enableFrameMovement(frame1);
+	local comboPointsDisplay = 	{
+		"1",
+		"2",
+		"3",
+		"4",
+		"5 !!"
+	}
 	
-	frame1.texture1 = createBlackBg(frame1, 0.8);
-	frame1:SetWidth(75);
-	frame1:SetHeight(20);
-	frame1:SetPoint("LEFT", PlayerFrame, "RIGHT", 40, 0);
+	local bgFrame = CreateFrame("Frame", "ZxCreateTargetHpFrame", ZxMasterFrame);
+	bgFrame:SetWidth(75);
+	bgFrame:SetHeight(20);
+	bgFrame:SetPoint("LEFT", PlayerFrame, "RIGHT", 35, 0);
+	enableFrameMovement(bgFrame);
+	bgFrame.texture1 = createBlackBg(bgFrame, 0.8);
+	bgFrame:Hide(); -- Hide background frames initially
 	
-	frame1.targetHp = CreateFrame("StatusBar", nil, ZxTargetHealth);
-	frame1.targetHp:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar");
-	frame1.targetHp:GetStatusBarTexture():SetHorizTile(false);
-	frame1.targetHp:SetAllPoints();
-	frame1.targetHp:SetStatusBarColor(0, 1, 0, 0.5);
+	-- Create green texture for health bars
+	bgFrame.curHealthBar = CreateFrame("StatusBar", nil, ZxCreateTargetHpFrame);
+	bgFrame.curHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar");
+	bgFrame.curHealthBar:GetStatusBarTexture():SetHorizTile(false);
+	bgFrame.curHealthBar:SetStatusBarColor(0, 1, 0, 0.5);
 	
-	frame1.hpText = frame1:CreateFontString(nil, "OVERLAY");
-	frame1.hpText:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE");
-	frame1.hpText:SetText(1.0, 1.0, 1.0, 1.0);
-	frame1.hpText:SetAllPoints();
+	-- Create health bar text
+	bgFrame.textHealth = bgFrame:CreateFontString(nil, "OVERLAY");
+	bgFrame.textHealth:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE");
+	bgFrame.textHealth:SetTextColor(1.0, 1.0, 1.0, 1.0);
+	bgFrame.textHealth:SetAllPoints();
 	
-	frame1:Hide(); -- No target selected initially
+	-- Create combo point display
+	bgFrame.comboPointBg = CreateFrame("Frame", nil, ZxCreateTargetHpFrame);
+	bgFrame.comboPointBg.texture1 = createBlackBg(bgFrame.comboPointBg, 0.5);
+	SetFrameSize(bgFrame.comboPointBg, math.floor(bgFrame:GetWidth() / 2), bgFrame:GetHeight());
+	bgFrame.comboPointBg:SetPoint("BOTTOM", ZxCreateTargetHpFrame, "TOP", 0, 0);
 	
-	frame1.targetHp:RegisterEvent("PLAYER_TARGET_CHANGED");
-	frame1.targetHp:RegisterEvent("UNIT_HEALTH");
-	frame1.targetHp:SetScript("OnEvent", function(self, event, unit)
+	bgFrame.comboPointBg.comboText = bgFrame.comboPointBg:CreateFontString(nil, "OVERLAY");
+	bgFrame.comboPointBg.comboText:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE");
+	bgFrame.comboPointBg.comboText:SetTextColor(1.0, 1.0, 0.0, 1.0);
+	bgFrame.comboPointBg.comboText:SetAllPoints();
+	bgFrame.comboPointBg:Hide();
+	
+	bgFrame:RegisterEvent("PLAYER_TARGET_CHANGED");
+	bgFrame:RegisterEvent("UNIT_HEALTH");
+	bgFrame:RegisterEvent("UNIT_COMBO_POINTS");
+	
+	bgFrame:SetScript("OnEvent", function(self, event, unit)
 		if (event == "PLAYER_TARGET_CHANGED") then
-			local curHp = UnitHealth("Target");
-			local maxHp = UnitHealthMax("Target");
-			local percentHp = curHp / maxHp * 100;
+			tempHp = getPercentHp();
 			-- If no target selected, then hide the frames
-			if (maxHp == 0) then
-				frame1:Hide();
+			if (tempHp == 0) then
+				bgFrame:Hide();
 				return;
-			-- If target is selected, show frames
 			else
-				frame1.targetHp:SetMinMaxValues(0, 100);
-				frame1.targetHp:SetValue(percentHp);
-				frame1.hpText:SetText(string.format("%.1f%%", percentHp));
-				frame1:Show();
+				bgFrame:Show();
+				reverseBar(bgFrame.curHealthBar, tempHp);
+				bgFrame.textHealth:SetText(string.format("%0.1f%%", tempHp))
 			end
-			
+		
 		elseif (event == "UNIT_HEALTH") then
-			local curHp = UnitHealth("Target");
-			local maxHp = UnitHealthMax("Target");
-			local percentHp = curHp / maxHp * 100;
-			frame1.targetHp:SetValue(percentHp);
-			frame1.hpText:SetText(string.format("%.1f%%", percentHp));
+			tempHp = getPercentHp();
+			reverseBar(bgFrame.curHealthBar, tempHp);
+			bgFrame.textHealth:SetText(string.format("%0.1f%%", tempHp))
+		end
+		
+		if (event == "UNIT_COMBO_POINTS") then
+			local comboPoints = GetComboPoints("Player", "Target");
+			
+			-- Only display if there IS a combo point
+			if (comboPoints == 0) then
+				bgFrame.comboPointBg:Hide();
+			else
+				bgFrame.comboPointBg.comboText:SetText(comboPointsDisplay[comboPoints]);
+				bgFrame.comboPointBg:Show();
+			end
 		end
 	end)
 end
