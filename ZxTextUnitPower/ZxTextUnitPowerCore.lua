@@ -204,6 +204,11 @@ local function createTargetHp()
 				bgFrame:Hide();
 				return;
 			else
+				local comboPoints = GetComboPoints("Player", "Target");
+				if (comboPoints == 0) then
+					bgFrame.comboPointBg:Hide();
+				end
+				
 				bgFrame:Show();
 				reverseBar(bgFrame.curHealthBar, tempHp);
 				bgFrame.textHealth:SetText(string.format("%0.1f%%", tempHp))
