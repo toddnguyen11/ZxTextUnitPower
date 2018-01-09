@@ -1,5 +1,5 @@
 ## Interface: 30300
-## Title: Text Unit Power
+## Title: ZxTextUnitPower
 ## Author: ZxScepter
 ## Notes: Display power as a text
 

@@ -60,15 +60,13 @@ local function registerForEvents(unitInput)
 end
 
 -- Wrapper function to color texture
-local function drawTexture()
-	r, g, b, powerToken = getRgb();
+local function drawTexture(frameInput)
+	local r, g, b, powerToken = getRgb();
 	if (powerToken == "MANA") then
-		ZxMasterFrame.MainFrame.texture1:SetTexture(r, g, b, 0.5);
+		frameInput:SetStatusBarColor(r, g, b, 0.5);
 	else
-		ZxMasterFrame.MainFrame.texture1:SetTexture(r, g, b, 0.7);
+		frameInput:SetStatusBarColor(r, g, b, 0.7);
 	end 
-
-	ZxMasterFrame.MainFrame.texture1:SetAllPoints();
 end
 
 powerRegistered = {
@@ -101,13 +99,26 @@ local function hasValue(value)
 	return false
 end
 
-local function createUnitDisplay()
-	ZxMasterFrame.MainFrame.texture1 = ZxMasterFrame.MainFrame:CreateTexture(nil, "BACKGROUND")
-	drawTexture()
+local function playerSetMinMaxPower(frameInput)
+	frameInput:SetMinMaxValues(0, UnitPowerMax("Player"));
+	frameInput:SetValue(UnitPower("Player"));
+end
+
+local function createUnitDisplay(frameInput)
+
+	local r, g, b, powerToken = getRgb();
+
+	frameInput.statusB = CreateFrame("StatusBar", nil, frameInput);
+	frameInput.statusB:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar");
+	frameInput.statusB:GetStatusBarTexture():SetHorizTile(false);
+	frameInput.statusB:SetAllPoints();
 	
-	ZxMasterFrame.MainFrame.UnitPowerDisplay = ZxMasterFrame.MainFrame:CreateFontString(nil, "OVERLAY");
-	ZxMasterFrame.MainFrame.UnitPowerDisplay:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE");
-	ZxMasterFrame.MainFrame.UnitPowerDisplay:SetAllPoints();
+	playerSetMinMaxPower(frameInput.statusB);
+	drawTexture(frameInput.statusB);
+	
+	frameInput.UnitPowerDisplay = frameInput:CreateFontString(nil, "OVERLAY");
+	frameInput.UnitPowerDisplay:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE");
+	frameInput.UnitPowerDisplay:SetAllPoints();
 	_, unitPType = UnitPowerType("Player")
 	writePowerValue()
 
@@ -117,11 +128,13 @@ local function createUnitDisplay()
 
 	registerForEvents("UPDATE_SHAPESHIFT_FORM");
 	
-	ZxMasterFrame.MainFrame:SetScript("OnEvent", function(self, event, unit)
+	frameInput:SetScript("OnEvent", function(self, event, unit)
 		if (not(event == "UPDATE_SHAPESHIFT_FORM")) then
+			playerSetMinMaxPower(frameInput.statusB);		
 			writePowerValue();
 		else
-			drawTexture();
+			playerSetMinMaxPower(frameInput.statusB);
+			drawTexture(frameInput.statusB);
 			writePowerValue();
 		end
 	end)
@@ -177,11 +190,12 @@ local function showComboText(comboTextDisplay)
 	end
 end
 
+-- MAIN TARGET HP FUNCTION
 local function createTargetHp()	
 	local bgFrame = CreateFrame("Frame", "ZxCreateTargetHpFrame", ZxMasterFrame);
 	bgFrame:SetWidth(75);
 	bgFrame:SetHeight(20);
-	bgFrame:SetPoint("LEFT", PlayerFrame, "RIGHT", 35, 0);
+	bgFrame:SetPoint("BOTTOMLEFT", TargetFrame, "TOPLEFT", 0, -10);
 	enableFrameMovement(bgFrame);
 	bgFrame.texture1 = createBlackBg(bgFrame, 0.8);
 	bgFrame:Hide(); -- Hide background frames initially
@@ -223,19 +237,98 @@ local function createTargetHp()
 				return;
 			else
 				showComboText(bgFrame.comboPointBg.comboText);				
-				bgFrame:Show();
-				reverseBar(bgFrame.curHealthBar, tempHp);
+				
+				--reverseBar(bgFrame.curHealthBar, tempHp);
+				bgFrame.curHealthBar:SetMinMaxValues(0, UnitHealthMax("Target"));
+				bgFrame.curHealthBar:SetAllPoints();
+				bgFrame.curHealthBar:SetValue(UnitHealth("Target"));
+				
 				bgFrame.textHealth:SetText(string.format("%0.1f%%", tempHp))
+				bgFrame:Show();
 			end
 		
 		elseif (event == "UNIT_HEALTH") then
 			tempHp = getPercentHp();
-			reverseBar(bgFrame.curHealthBar, tempHp);
+			--reverseBar(bgFrame.curHealthBar, tempHp);
+			bgFrame.curHealthBar:SetMinMaxValues(0, UnitHealthMax("Target"));
+			bgFrame.curHealthBar:SetAllPoints();
+			bgFrame.curHealthBar:SetValue(UnitHealth("Target"));
+			
 			bgFrame.textHealth:SetText(string.format("%0.1f%%", tempHp))
 		end
 		
 		if (event == "UNIT_COMBO_POINTS") then
 			showComboText(bgFrame.comboPointBg.comboText);	
+		end
+	end)
+end
+
+local function threatCheck()
+	local _, _, scaledPercent =  UnitDetailedThreatSituation("Player", "Target");
+	if scaledPercent == nil then
+		scaledPercent = 0
+	end
+	
+	return scaledPercent
+end
+
+local function createThreatDisplay()
+	-- Create threat display
+	local threatFrameBg = CreateFrame("Frame", "ZxThreatFrameBg", ZxMasterFrame);
+	threatFrameBg:SetWidth(75);
+	threatFrameBg:SetHeight(20);
+	--threatFrameBg:SetPoint("BOTTOMRIGHT", TargetFrame, "TOPRIGHT", -40, -5);
+	threatFrameBg:SetPoint("LEFT", ZxCreateTargetHpFrame, "RIGHT", 40, 0);
+	enableFrameMovement(threatFrameBg);
+	threatFrameBg.texture1 = createBlackBg(threatFrameBg, 0.8);
+	
+	-- Create actual texture of threat
+	threatFrameBg.StatusBarThreat = CreateFrame("StatusBar", nil, ZxThreatFrameBg)
+	threatFrameBg.StatusBarThreat:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar");
+	threatFrameBg.StatusBarThreat:GetStatusBarTexture():SetHorizTile(false);
+	threatFrameBg.StatusBarThreat:SetMinMaxValues(0, 100);
+	threatFrameBg.StatusBarThreat:SetAllPoints();
+	
+	-- Create text
+	threatFrameBg.ThreatText = threatFrameBg:CreateFontString(nil, "OVERLAY")
+	threatFrameBg.ThreatText:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE");
+	threatFrameBg.ThreatText:SetTextColor(1.0, 1.0, 1.0, 1.0);
+	threatFrameBg.ThreatText:SetAllPoints();
+	
+	-- Initially hide
+	threatFrameBg:Hide();
+	threatFrameBg:RegisterEvent("PLAYER_TARGET_CHANGED");
+	threatFrameBg:RegisterEvent("UNIT_HEALTH");
+	
+	threatFrameBg:SetScript("OnEvent", function(self, event, unit)
+		if (event == "PLAYER_TARGET_CHANGED") then
+			local maxHp = UnitHealthMax("Target");
+			if maxHp == 0 then
+				threatFrameBg:Hide();
+			else
+				local threatAmt = threatCheck()
+				if threatAmt < 100 then
+					threatFrameBg.StatusBarThreat:SetStatusBarColor(0.9, 0.8, 0.7, 0.8);
+				else
+					threatFrameBg.StatusBarThreat:SetStatusBarColor(1.0, 0.0, 0.0, 0.6);
+				end
+				
+				threatFrameBg.StatusBarThreat:SetValue(threatAmt)
+				threatFrameBg.ThreatText:SetText(string.format("%0.1f%%", threatAmt));
+				
+				threatFrameBg:Show();
+			end
+			
+		elseif (event == "UNIT_HEALTH") then
+			local threatAmt = threatCheck()
+			if threatAmt < 100 then
+				threatFrameBg.StatusBarThreat:SetStatusBarColor(0.9, 0.8, 0.7, 0.8);
+			else
+				threatFrameBg.StatusBarThreat:SetStatusBarColor(1.0, 0.0, 0.0, 0.6);
+			end
+			
+			threatFrameBg.StatusBarThreat:SetValue(threatAmt)
+			threatFrameBg.ThreatText:SetText(string.format("%0.1f%%", threatAmt));
 		end
 	end)
 end
@@ -248,10 +341,11 @@ local function init()
 	ZxMasterFrame.MainFrame:SetSize(75,20)
 	ZxMasterFrame.MainFrame:SetPoint("BOTTOMLEFT", PlayerFrame, "TOP", -20, -15)
 	enableFrameMovement(ZxMasterFrame.MainFrame);
+	createBlackBg(ZxMasterFrame.MainFrame, 0.8);
 	
-	createUnitDisplay()
-	
+	createUnitDisplay(ZxMasterFrame.MainFrame)
 	createTargetHp();
+	createThreatDisplay();
 end
 
 
