@@ -228,7 +228,7 @@ local function createTargetHp()
 	-- Create green texture for health bars
 	bgFrame.curHealthBar = CreateFrame("StatusBar", nil, ZxTargetHpFrame);
 	--bgFrame.curHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar");
-	bgFrame.curHealthBar:SetStatusBarTexture("Interface\\AddOns\\ZxTextUnitPower\\textures\\ZxBantoBar.tga")
+	bgFrame.curHealthBar:SetStatusBarTexture("Interface\\AddOns\\ZxTextUnitPower\\textures\\TopGradient.tga")
 	bgFrame.curHealthBar:GetStatusBarTexture():SetHorizTile(false);
 	bgFrame.curHealthBar:SetStatusBarColor(0, 1, 0, 0.5);
 
@@ -279,7 +279,7 @@ local function createTargetPower()
 
 	-- Create colored texture for power bars
 	bgFrame.curPowerBar = CreateFrame("StatusBar", nil, ZxTargetPowerFrame);
-	bgFrame.curPowerBar:SetStatusBarTexture("Interface\\AddOns\\ZxTextUnitPower\\textures\\ZxBantoBar.tga");
+	bgFrame.curPowerBar:SetStatusBarTexture("Interface\\AddOns\\ZxTextUnitPower\\textures\\TopGradient.tga");
 	bgFrame.curPowerBar:GetStatusBarTexture():SetHorizTile(false);
 
 	-- Create power bar text
