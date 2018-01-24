@@ -25,7 +25,7 @@ local function createBlackBgFrame(frameName, width, height, alphaLevel)
 	bgFrame.texture1:SetAllPoints()
 	enableFrameMovement(bgFrame)
 	bgFrame:SetSize(width, height)
-	
+
 	return bgFrame
 end
 
@@ -73,7 +73,7 @@ local function drawBarTexture(frameInput, unitToDisplay)
 		frameInput:SetStatusBarColor(r, g, b, 0.5);
 	else
 		frameInput:SetStatusBarColor(r, g, b, 0.7);
-	end 
+	end
 end
 
 
@@ -91,7 +91,7 @@ local function writePowerValue(frameInput, unitToDisplay)
 end
 
 
-local function setMinMaxStatusBar(frameInput, unitToDisplay)
+local function setMinMaxPowerBar(frameInput, unitToDisplay)
 	frameInput:SetMinMaxValues(0, UnitPowerMax(unitToDisplay))
 	frameInput:SetValue(UnitPower(unitToDisplay))
 end
@@ -103,7 +103,7 @@ local function hasValue(value)
 			return true;
 		end
 	end
-	
+
 	return false
 end
 
@@ -112,7 +112,7 @@ local function reverseBar(healthBar, currentHp)
 	backgroundFrame = healthBar:GetParent();
 	healthBar:SetMinMaxValues(0, currentHp);
 	healthBar:ClearAllPoints();
-	healthBar:SetPoint("BOTTOMRIGHT");		
+	healthBar:SetPoint("BOTTOMRIGHT");
 	local tempWidth = backgroundFrame:GetWidth();
 	local tempLocation = tempWidth - (tempWidth * currentHp / 100.0)
 	healthBar:SetPoint("TOPLEFT", backgroundFrame, "TOPLEFT", tempLocation, 0);
@@ -125,7 +125,7 @@ local function createComboPointDisplay(frameInput)
 	frameInput.comboPointBg.texture1 = createBlackBgFrame(frameInput.comboPointBg, math.floor(frameInput:GetWidth() / 2),
 		frameInput:GetHeight(), 0.5);
 	frameInput.comboPointBg:SetPoint("BOTTOM", ZxCreateTargetHpFrame, "TOP", 0, 0);
-	
+
 	frameInput.comboPointBg.comboText = frameInput.comboPointBg:CreateFontString(nil, "OVERLAY");
 	frameInput.comboPointBg.comboText:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE");
 	frameInput.comboPointBg.comboText:SetTextColor(1.0, 1.0, 0.0, 1.0);
@@ -145,9 +145,9 @@ local function showComboText(comboTextDisplay)
 			"4",
 			"5 !!"
 	}
-	
+
 	local comboPoints = GetComboPoints("Player", "Target");
-			
+
 	-- Only display if there IS a combo point
 	if (comboPoints == 0) then
 		parent:Hide();
@@ -183,7 +183,7 @@ local function threatCheck()
 	if scaledPercent == nil then
 		scaledPercent = 0
 	end
-	
+
 	return scaledPercent
 end
 
@@ -191,16 +191,53 @@ end
 -- MAIN FUNCTIONS
 ----------------------------------------------------------------
 
-local function createPlayerPowerDisplay()
-	local bgFrame = createBlackBgFrame("ZxPlayerPowerFrame", 75, 20, 0.8)
-	bgFrame:SetPoint("BOTTOMLEFT", PlayerFrame, "TOP", -20, -15)
+local function createPlayerHealthDisplay()
+	local bgFrame = CreateFrame("Button", "ZxPlayerHealthFrame", ZxMasterFrame, "SecureActionButtonTemplate")
+	bgFrame.texture1 = bgFrame:CreateTexture(nil, "BACKGROUND")
+	bgFrame.texture1:SetTexture(0, 0, 0, alphaLevel)
+	bgFrame.texture1:SetAllPoints()
+	bgFrame:SetSize(125, 20)
+	bgFrame:SetPoint("CENTER", WorldFrame, -50, -150)
 
-	bgFrame.CurHealthBar = CreateFrame("StatusBar", nil, ZxPlayerPowerFrame)
+	-- Register for Left Mouse Button
+	bgFrame:RegisterForClicks("LeftButtonDown")
+	bgFrame:SetAttribute("unit", "player")
+	bgFrame:SetAttribute("type1", "target")
+	bgFrame:SetAttribute("*type1", "target")
+
+	bgFrame.CurHealthBar = CreateFrame("StatusBar", nil, ZxPlayerHealthFrame)
 	bgFrame.CurHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	bgFrame.CurHealthBar:GetStatusBarTexture():SetHorizTile(false)
 	bgFrame.CurHealthBar:SetAllPoints()
-	setMinMaxStatusBar(bgFrame.CurHealthBar, "Player")
-	drawBarTexture(bgFrame.CurHealthBar, "Player")
+	bgFrame.CurHealthBar:SetMinMaxValues(0, UnitHealthMax("Player"))
+	bgFrame.CurHealthBar:SetStatusBarColor(0, 1, 0, 0.5);
+	bgFrame.CurHealthBar:SetValue(UnitHealth("Player"))
+
+	bgFrame.HealthText = bgFrame:CreateFontString(nil, "OVERLAY")
+	bgFrame.HealthText:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE")
+	bgFrame.HealthText:SetAllPoints()
+	bgFrame.HealthText:SetText(string.format("%.1f%%", UnitHealth("Player") / UnitHealthMax("Player") * 100.0))
+
+	bgFrame:RegisterEvent("UNIT_HEALTH")
+
+	bgFrame:SetScript("OnEvent", function(self, event, unit)
+		if (unit == "player") then
+			bgFrame.CurHealthBar:SetValue(UnitHealth("Player"))
+			bgFrame.HealthText:SetText(string.format("%.1f%%", UnitHealth("Player") / UnitHealthMax("Player") * 100.0))
+		end
+	end)
+end
+
+local function createPlayerPowerDisplay()
+	local bgFrame = createBlackBgFrame("ZxPlayerPowerFrame", 125, 20, 0.8)
+	bgFrame:SetPoint("TOPLEFT", ZxPlayerHealthFrame, "BOTTOMLEFT", 0, -2)
+
+	bgFrame.CurPowerBar = CreateFrame("StatusBar", nil, ZxPlayerPowerFrame)
+	bgFrame.CurPowerBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+	bgFrame.CurPowerBar:GetStatusBarTexture():SetHorizTile(false)
+	bgFrame.CurPowerBar:SetAllPoints()
+	setMinMaxPowerBar(bgFrame.CurPowerBar, "Player")
+	drawBarTexture(bgFrame.CurPowerBar, "Player")
 
 	bgFrame.PowerText = bgFrame:CreateFontString(nil, "OVERLAY")
 	bgFrame.PowerText:SetFont("Interface\\AddOns\\ZxTextUnitPower\\PTSansBold.ttf", 16, "OUTLINE")
@@ -213,16 +250,16 @@ local function createPlayerPowerDisplay()
 	bgFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 
 	bgFrame:SetScript("OnEvent", function(self, event, unit)
-		setMinMaxStatusBar(bgFrame.CurHealthBar, "Player")
+		setMinMaxPowerBar(bgFrame.CurPowerBar, "Player")
 		writePowerValue(bgFrame.PowerText, "Player")
-		drawBarTexture(bgFrame.CurHealthBar, "Player")
+		drawBarTexture(bgFrame.CurPowerBar, "Player")
 	end)
 end
 
 
 local function createTargetHp()
 	local bgFrame = createBlackBgFrame("ZxTargetHpFrame", 125, 20, 0.8)
-	bgFrame:SetPoint("LEFT", PlayerFrame, "RIGHT", 100, 10);
+	bgFrame:SetPoint("LEFT", ZxPlayerHealthFrame, "RIGHT", 25, 0);
 	bgFrame:Hide() -- Hide TargetHP initially
 
 	-- Create green texture for health bars
@@ -240,7 +277,7 @@ local function createTargetHp()
 
 	-- Create combo point display
 	bgFrame.comboPointBg = createComboPointDisplay(bgFrame)
-	
+
 	bgFrame:RegisterEvent("PLAYER_TARGET_CHANGED");
 	bgFrame:RegisterEvent("UNIT_HEALTH");
 	bgFrame:RegisterEvent("UNIT_COMBO_POINTS");
@@ -288,7 +325,7 @@ local function createTargetPower()
 	bgFrame.textPower:SetTextColor(1.0, 1.0, 1.0, 1.0);
 	bgFrame.textPower:SetAllPoints();
 
-	for _, power in pairs(powerRegistered) do 
+	for _, power in pairs(powerRegistered) do
 		bgFrame:RegisterEvent(power)
 	end
 	bgFrame:RegisterEvent("PLAYER_TARGET_CHANGED");
@@ -296,7 +333,7 @@ local function createTargetPower()
 	bgFrame:SetScript("OnEvent", function(self, event, unit)
 		r, g, b, powerToken = getRgb("Target");
 
-		if (event == "PLAYER_TARGET_CHANGED") then						
+		if (event == "PLAYER_TARGET_CHANGED") then
 			-- If no target selected, then hide the frames
 			if (UnitHealthMax("Target") == 0 or UnitHealth("Target") == 0) then
 				bgFrame:Hide()
@@ -305,12 +342,12 @@ local function createTargetPower()
 				bgFrame:Show();
 			end
 		end
-		
+
 		if (bgFrame:IsVisible()) then
 			bgFrame.curPowerBar:SetMinMaxValues(0, UnitPowerMax("Target"));
 			bgFrame.curPowerBar:SetAllPoints();
 			bgFrame.curPowerBar:SetValue(UnitPower("Target"));
-				
+
 			if (UnitPowerMax("Target") ~= 0) then
 				tempPower = UnitPower("Target") / UnitPowerMax("Target") * 100;
 				bgFrame.textPower:SetText(string.format("%0.1f%%", tempPower))
@@ -330,7 +367,7 @@ end
 
 local function createThreatDisplay()
 	local bgFrame = createBlackBgFrame("ZxThreatFrame", 75, 20, 0.8)
-	bgFrame:SetPoint("BOTTOM", ZxTargetHpFrame, "TOP", 0, 5)
+	bgFrame:SetPoint("BOTTOMLEFT", ZxTargetHpFrame, "TOPLEFT", 0, 5)
 	bgFrame:Hide()
 
 	-- Create actual texture of threat
@@ -367,7 +404,7 @@ local function createThreatDisplay()
 			else
 				bgFrame.StatusBarThreat:SetStatusBarColor(1.0, 0.0, 0.0, 0.6)
 			end
-			
+
 			bgFrame.StatusBarThreat:SetValue(threatAmt)
 			bgFrame.ThreatText:SetText(string.format("%0.1f%%", threatAmt))
 		end
@@ -378,7 +415,8 @@ end
 local function init()
 	ZxMasterFrame = CreateFrame("Frame", "ZxMasterFrame", UIParent)
 	ZxMasterFrame:SetPoint("CENTER", 0, 0)
-	
+
+	createPlayerHealthDisplay()
 	createPlayerPowerDisplay()
 	createTargetHp()
 	createTargetPower()
