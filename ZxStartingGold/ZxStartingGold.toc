@@ -1,0 +1,6 @@
+## Interface: 30300
+## Title: Zx Starting Gold
+## Author: ZxScepter
+## Notes: Display starting gold.
+
+ZxStartingGoldCore.lua
