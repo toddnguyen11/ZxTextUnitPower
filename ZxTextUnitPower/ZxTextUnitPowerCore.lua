@@ -83,7 +83,7 @@ local function writePowerValue(frameInput, unitToDisplay)
 		local curPower = UnitPower(unitToDisplay);
 		local maxPower = UnitPowerMax(unitToDisplay);
 		local perPower = (curPower / maxPower) * 100;
-		percentage = string.format("%.1f %%", perPower);
+		percentage = string.format("%.1f%%", perPower);
 		frameInput:SetText(percentage);
 	else
 		frameInput:SetText(UnitPower(unitToDisplay));
