@@ -1,6 +1,18 @@
-ZxUnitPowerText
----------------
-A simple AddOn that displays your unit's power (either Mana, Rage, or Energy) above your PlayerFrame.
+Zx Wrath of the Lich King Addons
+--------------------------------
+*ActionBarFont*
+Change your action bar fonts!
+
+*ZxStartingGold*
+Display how much gold you have earned in your current playthrough with the command ```/zxgold```
+
+*ZxTextUnitPower*
+A simple AddOn that displays:
+	* Your Health
+	* Your Power (Mana/Rage/Energy)
+	* Target Health
+	* Target Power
+	* Target Aggro
 
 *WoW Version*: Wrath of the Lich King
 
