@@ -11,7 +11,7 @@ local defaultStubs = {
 }
 for stub,numButtons in pairs(defaultStubs) do
 	for i=1,numButtons do
-		_G[stub..i.."HotKey"]:SetFont(fontPath.."ARIALNB.ttf", 17, "OUTLINE")
+		_G[stub..i.."HotKey"]:SetFont(fontPath.."PTSansBold.ttf", 16, "OUTLINE")
 		_G[stub..i.."HotKey"]:SetTextColor(1.0, 1.0, 1.0, 1.0)
 	end
 end
