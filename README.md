@@ -1,18 +1,18 @@
-#Zx Wrath of the Lich King Addons
+# Zx Wrath of the Lich King Addons
 
-##ActionBarFont
-Change your action bar fonts!
+**ActionBarFont**
+  * Change your action bar fonts!
 
-##ZxStartingGold
-Display how much gold you have earned in your current playthrough with the command ```/zxgold```
+**ZxStartingGold**
+  * Display how much gold you have earned in your current playthrough with the command ```/zxgold```
 
-#ZxTextUnitPower
-A simple AddOn that displays:
-* Your Health
-* Your Power (Mana/Rage/Energy)
-* Target Health
-* Target Power
-* Target Aggro
+**ZxTextUnitPower**
+* A simple AddOn that displays:
+  1. Your Health
+  2. Your Power (Mana/Rage/Energy)
+  3. Target Health
+  4. Target Power
+  5. Target Aggro
 
 *WoW Version*: Wrath of the Lich King 3.3.5a
 
