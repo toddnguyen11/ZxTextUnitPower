@@ -229,8 +229,18 @@ local function createPlayerHealthDisplay()
 end
 
 local function createPlayerPowerDisplay()
-	local bgFrame = createBlackBgFrame("ZxPlayerPowerFrame", 125, 20, 0.8)
+	local bgFrame = CreateFrame("Button", "ZxPlayerPowerFrame", ZxMasterFrame, "SecureActionButtonTemplate")
+	bgFrame.texture1 = bgFrame:CreateTexture(nil, "BACKGROUND")
+	bgFrame.texture1:SetTexture(0, 0, 0, alphaLevel)
+	bgFrame.texture1:SetAllPoints()
+	bgFrame:SetSize(125, 20)
 	bgFrame:SetPoint("TOPLEFT", ZxPlayerHealthFrame, "BOTTOMLEFT", 0, -2)
+	
+	-- Register for Left Mouse Button
+	bgFrame:RegisterForClicks("LeftButtonDown")
+	bgFrame:SetAttribute("unit", "player")
+	bgFrame:SetAttribute("type1", "target")
+	bgFrame:SetAttribute("*type1", "target")
 
 	bgFrame.CurPowerBar = CreateFrame("StatusBar", nil, ZxPlayerPowerFrame)
 	bgFrame.CurPowerBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
@@ -259,7 +269,7 @@ end
 
 local function createTargetHp()
 	local bgFrame = createBlackBgFrame("ZxTargetHpFrame", 125, 20, 0.8)
-	bgFrame:SetPoint("LEFT", ZxPlayerHealthFrame, "RIGHT", 25, 0);
+	bgFrame:SetPoint("LEFT", ZxPlayerHealthFrame, "RIGHT", 30, 0);
 	bgFrame:Hide() -- Hide TargetHP initially
 
 	-- Create green texture for health bars
