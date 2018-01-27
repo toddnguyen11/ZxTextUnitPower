@@ -221,10 +221,10 @@ local function createPlayerHealthDisplay()
 	bgFrame:RegisterEvent("UNIT_HEALTH")
 
 	bgFrame:SetScript("OnEvent", function(self, event, unit)
-		if (unit == "Player") then
-			bgFrame.CurHealthBar:SetMinMaxValues(0, UnitHealthMax("Player"))
+		if (unit == "player") then
+			bgFrame.CurHealthBar:SetMinMaxValues(0, UnitHealthMax("player"))
 			bgFrame.CurHealthBar:SetValue(UnitHealth("Player"))
-			bgFrame.HealthText:SetText(string.format("%.1f%%", UnitHealth("Player") / UnitHealthMax("Player") * 100.0))
+			bgFrame.HealthText:SetText(string.format("%.1f%%", UnitHealth("player") / UnitHealthMax("player") * 100.0))
 		end
 	end)
 end
