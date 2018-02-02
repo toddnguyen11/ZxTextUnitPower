@@ -90,13 +90,6 @@ local function writePowerValue(frameInput, unitToDisplay)
 	end
 end
 
-
-local function setMinMaxPowerBar(frameInput, unitToDisplay)
-	frameInput:SetMinMaxValues(0, UnitPowerMax(unitToDisplay))
-	frameInput:SetValue(UnitPower(unitToDisplay))
-end
-
-
 local function hasValue(value)
 	for _, power in pairs(powerRegistered) do
 		if (value == power) then
@@ -209,7 +202,7 @@ local function createPlayerHealthDisplay()
 	bgFrame.CurHealthBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	bgFrame.CurHealthBar:GetStatusBarTexture():SetHorizTile(false)
 	bgFrame.CurHealthBar:SetAllPoints()
-	bgFrame.CurHealthBar:SetMinMaxValues(0, UnitHealthMax("Player"))
+	bgFrame.CurHealthBar:SetMinMaxValues(0, 1)
 	bgFrame.CurHealthBar:SetStatusBarColor(0, 1, 0, 0.5);
 	bgFrame.CurHealthBar:SetValue(UnitHealth("Player"))
 
@@ -222,8 +215,7 @@ local function createPlayerHealthDisplay()
 
 	bgFrame:SetScript("OnEvent", function(self, event, unit)
 		if (unit == "player") then
-			bgFrame.CurHealthBar:SetMinMaxValues(0, UnitHealthMax("player"))
-			bgFrame.CurHealthBar:SetValue(UnitHealth("Player"))
+			bgFrame.CurHealthBar:SetValue(UnitHealth("Player")/UnitHealthMax("player"))
 			bgFrame.HealthText:SetText(string.format("%.1f%%", UnitHealth("player") / UnitHealthMax("player") * 100.0))
 		end
 	end)
@@ -247,7 +239,8 @@ local function createPlayerPowerDisplay()
 	bgFrame.CurPowerBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	bgFrame.CurPowerBar:GetStatusBarTexture():SetHorizTile(false)
 	bgFrame.CurPowerBar:SetAllPoints()
-	setMinMaxPowerBar(bgFrame.CurPowerBar, "Player")
+	bgFrame.CurPowerBar:SetMinMaxValues(0, 1)
+	bgFrame.CurPowerBar:SetValue(UnitPower("player")/UnitPowerMax("player"))
 	drawBarTexture(bgFrame.CurPowerBar, "Player")
 
 	bgFrame.PowerText = bgFrame:CreateFontString(nil, "OVERLAY")
@@ -261,7 +254,7 @@ local function createPlayerPowerDisplay()
 	bgFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
 
 	bgFrame:SetScript("OnEvent", function(self, event, unit)
-		setMinMaxPowerBar(bgFrame.CurPowerBar, "Player")
+		bgFrame.CurPowerBar:SetValue(UnitPower("player")/UnitPowerMax("player"))
 		writePowerValue(bgFrame.PowerText, "Player")
 		drawBarTexture(bgFrame.CurPowerBar, "Player")
 	end)
@@ -279,6 +272,7 @@ local function createTargetHp()
 	bgFrame.curHealthBar:SetStatusBarTexture("Interface\\AddOns\\ZxTextUnitPower\\textures\\TopGradient.tga")
 	bgFrame.curHealthBar:GetStatusBarTexture():SetHorizTile(false);
 	bgFrame.curHealthBar:SetStatusBarColor(0, 1, 0, 0.5);
+	bgFrame.curHealthBar:SetMinMaxValues(0, 1)
 
 	-- Create health bar text
 	bgFrame.textHealth = bgFrame:CreateFontString(nil, "OVERLAY");
@@ -311,9 +305,8 @@ local function createTargetHp()
 		end
 
 		if (bgFrame:IsVisible()) then
-			bgFrame.curHealthBar:SetMinMaxValues(0, UnitHealthMax("Target"))
 			bgFrame.curHealthBar:SetAllPoints()
-			bgFrame.curHealthBar:SetValue(UnitHealth("Target"))
+			bgFrame.curHealthBar:SetValue(UnitHealth("Target")/UnitHealthMax("target"))
 			bgFrame.textHealth:SetText(string.format("%0.1f%%", tempHp))
 		end
 	end)
@@ -355,22 +348,27 @@ local function createTargetPower()
 		end
 
 		if (bgFrame:IsVisible()) then
-			bgFrame.curPowerBar:SetMinMaxValues(0, UnitPowerMax("Target"));
-			bgFrame.curPowerBar:SetAllPoints();
-			bgFrame.curPowerBar:SetValue(UnitPower("Target"));
+			tempMaxPower = UnitPowerMax("target")
+			tempPower = 0
+			bgFrame.curPowerBar:SetMinMaxValues(0, 1)
+			bgFrame.curPowerBar:SetAllPoints()
 
-			if (UnitPowerMax("Target") ~= 0) then
-				tempPower = UnitPower("Target") / UnitPowerMax("Target") * 100;
-				bgFrame.textPower:SetText(string.format("%0.1f%%", tempPower))
+			if (tempMaxPower ~= 0) then
+				tempPower = UnitPower("target") / tempMaxPower
+				tempPower100 = tempPower * 100
+				bgFrame.textPower:SetText(string.format("%0.1f%%", tempPower100))
 				if (powerToken == "MANA") then
 					bgFrame.curPowerBar:SetStatusBarColor(r, g, b, 0.5);
 				else
 					bgFrame.curPowerBar:SetStatusBarColor(r, g, b, 0.7);
 				end
 			else
+				tempPower = 0
 				bgFrame.textPower:SetText("N/A");
 				bgFrame.curPowerBar:SetStatusBarColor(0, 1, 0, 0.2);
 			end
+			
+			bgFrame.curPowerBar:SetValue(tempPower)
 		end
 	end)
 end
