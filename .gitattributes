@@ -1,0 +1,10 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto eol=lf
+
+# Explicitly include these files
+*.lua text
+*.toc text
+
+# Exclude these files
+*.jpg binary
+*.png binary

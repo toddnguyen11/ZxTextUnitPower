@@ -1,0 +1,6 @@
+## Interface: 30300
+## Title: Zx Power Warning
+## Author: ZxScepter
+## Notes: Warns when HP/Power goes below 35%
+
+ZxPowerWarning.lua
