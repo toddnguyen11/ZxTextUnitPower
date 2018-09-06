@@ -33,7 +33,7 @@ local function createPlayerHealthWarning()
             if (percentHealth < threshold) then
                 if (alreadyWarned == false) then
                     -- Print text in green
-                    print("|cff008000  HP: " .. percentHealth .. "%" .. "|r")
+                    print("|cff00C600    HP: " .. percentHealth .. "%" .. "|r")
                     alreadyWarned = true
                 end
             else
@@ -95,7 +95,7 @@ local function createPlayerPowerWarning()
         elseif (event == "UNIT_ENERGY") then
             if (curPlayerPower < 40) then
                 if (alreadyWarned == false) then
-                    print("|cfFFFF00    Energy: " .. curPlayerPower .. "|r")
+                    print("|cffFFFF00    Energy: " .. curPlayerPower .. "|r")
                     alreadyWarned = true
                 end
             else
