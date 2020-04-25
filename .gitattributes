@@ -1,0 +1,11 @@
+* text=auto, eol=lf
+
+# Text files
+*.lua text
+*.toc text
+*.xml text
+
+# Binary files
+*.jpg binary
+*.jpeg binary
+*.png binary
