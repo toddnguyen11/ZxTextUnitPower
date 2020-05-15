@@ -1,156 +1,75 @@
-ZxSimpleUI = LibStub("AceAddon-3.0"):NewAddon("ZxSimpleUI", "AceConsole-3.0", "AceEvent-3.0")
-AceConfig = LibStub("AceConfig-3.0")
-AceGUI = LibStub("AceGUI-3.0")
+local ZxSimpleUI = LibStub("AceAddon-3.0"):NewAddon("ZxSimpleUI", "AceConsole-3.0", "AceEvent-3.0")
+local AceConfig = LibStub("AceConfig-3.0")
+local AceGUI = LibStub("AceGUI-3.0")
+---LibSharedMedia
+local media = LibStub("LibSharedMedia-3.0")
 
---- "Private" functions
-local _DrawGroup1, _DrawGroup2, _SelectGroup
-
--- Process options
-local optionsTable = {
-  name = "ZxSimpleUI",
-  handler = ZxSimpleUI,
-  type = 'group',
-  args = {
-    msg = {
-      -- textual input
-      type = 'input',
-      name = 'My Message',
-      desc = 'The message for this addon',
-      set = 'SetMyMessage',
-      get = 'GetMyMessage'
-    },
-  },
+--- "PRIVATE" variables
+local _HealthBarFrame
+local _defaults = {
+  profile = {
+    modules = { ["*"] = true },
+    healthbarwidth = 100,
+    powerbarwidth = 100,
+  }
 }
 
 function ZxSimpleUI:OnInitialize()
   ---Must initialize db AFTER SavedVariables is loaded!
-  self.db = LibStub("AceDB-3.0"):New("ZxSimpleUI_DB")
-
-  -- Restore saved settings
+  self.db = LibStub("AceDB-3.0"):New("ZxSimpleUI_DB", _defaults, true)
   self:Print(ChatFrame1, "YO")
-  self._myMessageVar = ""
-
-  -- Do NOT change the `options` table!
-  -- options.args.profile = LibStub("AceDBOpions-3.0"):GetOptionsTable(self.db)
-
-  self:RegisterChatCommand("zxsimpleui/slash", "ProcessSlashCommands")
-  AceConfig:RegisterOptionsTable("ZxSimpleUI", optionsTable, {"myslash", "myslashtwo"})
-
-  self:RegisterEvent("UNIT_HEALTH", "UnitHealthHandler")
-
-  -- self:CreateSimpleFrame()
-  self:CreateTabbedFrame()
+  self:CreateSimpleGroup()
+  -- self:CreateFrame()
 end
 
-function ZxSimpleUI:ProcessSlashCommands(input)
-  self:Print(input)
+-- function ZxSimpleUI:CreateFrame()
+--   local frame = AceGUI:Create("Frame")
+--   frame:SetTitle("Example Frame")
+--   -- frame:SetStatusText("AceGUI-3.0 Example Container Frame")
+--   frame:SetCallback("OnClose", function(widget)
+--     -- Always release your frames once your UI doesn't need them anymore!
+--     AceGUI:Release(widget)
+--   end)
+--   frame:SetLayout("Flow")
+
+--   local healthbar = AceGUI:Create("Label")
+--   healthbar:SetWidth(200)
+--   healthbar:SetText(UnitHealthMax("PLAYER"))
+--   frame:AddChild(healthbar)
+-- end
+
+local _FrameBackdropTable = {
+	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+	edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+	tile = true, tileSize = 32, edgeSize = 32,
+	insets = { left = 8, right = 8, top = 8, bottom = 8 }
+}
+
+function ZxSimpleUI:CreateSimpleGroup()
+  _HealthBarFrame = CreateFrame("Frame", nil, UIParent)
+  _HealthBarFrame:SetPoint("CENTER", nil, nil, 0, 0)
+  _HealthBarFrame:SetBackdrop(_FrameBackdropTable)
+  _HealthBarFrame:SetBackdropColor(1, 0, 0, 1)
+  _HealthBarFrame:SetWidth(200)
+  _HealthBarFrame:SetHeight(200)
+
+  _HealthBarFrame.StatusBar = CreateFrame("StatusBar", nil, _HealthBarFrame)
+  _HealthBarFrame.StatusBar:SetPoint("LEFT", _HealthBarFrame, "LEFT")
+  _HealthBarFrame.StatusBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+  _HealthBarFrame.StatusBar:SetStatusBarColor(1, 0, 0, 1)
+  _HealthBarFrame.StatusBar:SetWidth(_HealthBarFrame:GetWidth())
+  _HealthBarFrame.StatusBar:SetHeight(_HealthBarFrame:GetHeight())
+
+  _HealthBarFrame.Text = _HealthBarFrame:CreateFontString(nil, "OVERLAY")
+  _HealthBarFrame.Text:SetFont("Interface\\AddOns\\ZxSimpleUI\\fonts\\PTSansBold.ttf", 16, "OUTLINE")
+  _HealthBarFrame.Text:SetTextColor(0.0, 0.0, 0.0, 1.0)
+  _HealthBarFrame.Text:SetText("HELLO THERE")
+  _HealthBarFrame.Text:SetPoint("LEFT", _HealthBarFrame, "LEFT", 0, 0)
+
+  _HealthBarFrame:Show()
+  print(_HealthBarFrame:GetWidth())
 end
 
-function ZxSimpleUI:GetMyMessage(info)
-  return self._myMessageVar
-end
-
-function ZxSimpleUI:SetMyMessage(info, input)
-  self._myMessageVar = input
-end
-
-function ZxSimpleUI:UnitHealthHandler(eventName, unit, ...)
-  self:Print(UnitHealth("Player"))
-end
-
-function ZxSimpleUI:CreateSimpleFrame()
-  local textStore = ""
-
-  local frame = AceGUI:Create("Frame")
-  frame:SetTitle("Example Frame")
-  frame:SetStatusText("AceGUI-3.0 Example Container Frame")
-  frame:SetCallback("OnClose", function(widget)
-    -- Always releas your frames once your UI doesn't need them anymore!
-    AceGUI:Release(widget)
-  end)
-  frame:SetLayout("Flow")
-
-  local editbox = AceGUI:Create("EditBox")
-  editbox.label:SetFont(editbox.label:GetFont(), 14)
-  editbox:SetLabel("Insert text:")
-  -- Always set width!
-  editbox:SetWidth(200)
-  editbox:SetCallback("OnEnterPressed", function(widget, event, text)
-    textStore = text
-  end)
-  frame:AddChild(editbox)
-
-  local button = AceGUI:Create("Button")
-  button:SetText("Click Me!")
-  -- Always set width!
-  button:SetWidth(200)
-  button:SetCallback("OnClick", function()
-    print(textStore)
-  end)
-  frame:AddChild(button)
-end
-
-
-function ZxSimpleUI:CreateTabbedFrame()
-  local frame = AceGUI:Create("Frame")
-  frame:SetTitle("Example Tabbed Frame")
-  frame:SetStatusText("AceGUI-3.0 Example Container Frame")
-  frame:SetCallback("OnClose", function(widget)
-    AceGUI:Release(widget)
-  end)
-  -- Fill Layout - the TabGroup widget will fill the whole frame
-  frame:SetLayout("Fill")
-
-  -- Create Tab group
-  local tab = AceGUI:Create("TabGroup")
-  tab:SetLayout("Flow")
-  tab:SetTabs({
-    {text="Tab 1", value="tab1"},
-    {text="Tab 2", value="tab2"}
-  })
-  tab:SetCallback("OnGroupSelected", _SelectGroup)
-  -- Set initial tab (this will fire the `OnGroupSelected` callback)
-  tab:SelectTab("tab1")
-
-  frame:AddChild(tab)
-end
-
--- #######################
--- |  Private functions  |
--- #######################
-
----Draw widgets for tab 1
-function _DrawGroup1(container)
-  local desc = AceGUI:Create("Label")
-  desc:SetText("This is Tab 1")
-  desc:SetFullWidth(true)
-  container:AddChild(desc)
-
-  local button = AceGUI:Create("Button")
-  button:SetText("Tab 1 Button")
-  button:SetWidth(200)
-  container:AddChild(button)
-end
-
----Draw widgets for tab 2
-function _DrawGroup2(container)
-  local desc = AceGUI:Create("Label")
-  desc:SetText("This is Tab 2")
-  desc:SetFullWidth(true)
-  container:AddChild(desc)
-
-  local button = AceGUI:Create("Button")
-  button:SetText("Tab 2 Button")
-  button:SetWidth(200)
-  container:AddChild(button)
-end
-
----Callback function for `OnGroupSelected`.
-function _SelectGroup(container, event, group)
-  container:ReleaseChildren()
-  if group == "tab1" then
-    _DrawGroup1(container)
-  elseif group == "tab2" then
-    _DrawGroup2(container)
-  end
+function ZxSimpleUI:isModuleEnabled(module)
+  return self.db.profile.modules[module]
 end
