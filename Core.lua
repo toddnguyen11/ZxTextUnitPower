@@ -4,15 +4,19 @@ local AceGUI = LibStub("AceGUI-3.0")
 ---LibSharedMedia
 local media = LibStub("LibSharedMedia-3.0")
 
+--- "CONSTANTS"
+ZxSimpleUI.ADDON_NAME = "ZxSimpleUI"
+ZxSimpleUI.DECORATIVE_NAME = "Zx Simple UI"
+
 --- "PRIVATE" variables
 local _defaults = {
   profile = {
-    modules = { ["*"] = true },
-    healthbarwidth = 100,
-    healthbarheight = 100,
-    powerbarwidth = 100,
+    modules = { ["*"] = true }
   }
 }
+
+ZxSimpleUI.moduleOptionsTable = {}
+ZxSimpleUI.optionFrameTable = {}
 
 ZxSimpleUI.frameBackdropTable = {
 	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -23,13 +27,17 @@ ZxSimpleUI.frameBackdropTable = {
 
 function ZxSimpleUI:OnInitialize()
   ---Must initialize db AFTER SavedVariables is loaded!
-  self.db = LibStub("AceDB-3.0"):New("ZxSimpleUI_DB", _defaults, true)
-  self.db.RegisterCallback(self, "OnProfileChanged", "refreshConfig")
-  self.db.RegisterCallback(self, "OnProfileCopied", "refreshConfig")
-  self.db.RegisterCallback(self, "OnProfileReset", "refreshConfig")
+  local dbName = self.ADDON_NAME .. "_DB"
+  self.db = LibStub("AceDB-3.0"):New(dbName, _defaults, true)
 
   self:Print(ChatFrame1, "YO")
   -- self:CreateFrame()
+end
+
+function ZxSimpleUI:OnEnable()
+  self.db.RegisterCallback(self, "OnProfileChanged", "refreshConfig")
+  self.db.RegisterCallback(self, "OnProfileCopied", "refreshConfig")
+  self.db.RegisterCallback(self, "OnProfileReset", "refreshConfig")
 end
 
 -- function ZxSimpleUI:CreateFrame()
@@ -64,4 +72,14 @@ function ZxSimpleUI:refreshConfig()
       v:refreshConfig()
     end
   end
+end
+
+---@param name string
+---@param optTable table
+---@param displayName string
+function ZxSimpleUI:registerModuleOptions(name, optTable, displayName)
+  self.moduleOptionsTable[name] = optTable
+  self.optionFrameTable[name] = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
+    self.ADDON_NAME, displayName or name, self.DECORATIVE_NAME, name
+  )
 end

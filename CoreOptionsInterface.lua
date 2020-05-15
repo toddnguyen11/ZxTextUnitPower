@@ -5,77 +5,78 @@ local AceGUI = LibStub("AceGUI-3.0")
 local media = LibStub("LibSharedMedia-3.0")
 
 local CoreOptionsInterface = ZxSimpleUI:NewModule("Options", nil)
+CoreOptionsInterface._SCREEN_WIDTH = math.floor(GetScreenWidth())
+CoreOptionsInterface._SCREEN_HEIGHT = math.floor(GetScreenHeight())
 CoreOptionsInterface._MIN_BAR_SIZE = 10
-CoreOptionsInterface._MAX_BAR_SIZE = math.floor(GetScreenWidth() / 2)
-CoreOptionsInterface._APP_NAME = "ZxSimpleUI"
-CoreOptionsInterface._STEP = 2
+CoreOptionsInterface._MAX_BAR_SIZE = math.floor(CoreOptionsInterface._SCREEN_WIDTH / 2)
 
 -- PRIVATE functions and variables
 ---@param key string
-local _getOption, _setOption, _applySettings
+local _curDbProfile
+local _getOptionsTable, _getOption, _setOption, _applySettings
+local _handle_healthbar_positionx_center, _handle_healthbar_positiony_center
+local _incrementOrderIndex
+local _orderIndex = 1
 
 function CoreOptionsInterface:OnInitialize()
+  _curDbProfile = ZxSimpleUI.db.profile
   self:SetupOptions()
 end
 
 function CoreOptionsInterface:SetupOptions()
-  local optionsTable = self:_getOptionsTable()
-  LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(self._APP_NAME, optionsTable)
-  local frameRef = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
-    self._APP_NAME, "Zx Simple UI", nil, "general")
+  ZxSimpleUI.optionFrameTable = {}
+  LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(
+    ZxSimpleUI.ADDON_NAME, _getOptionsTable)
+  ZxSimpleUI.optionFrameTable[ZxSimpleUI.ADDON_NAME] =
+    LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
+      ZxSimpleUI.ADDON_NAME, ZxSimpleUI.DECORATIVE_NAME, nil, "general"
+    )
 end
 
 -- ########################################
 -- # "PRIVATE" functions
 -- ########################################
 
+local options = nil
+
 ---@return table
-function CoreOptionsInterface:_getOptionsTable()
-  if not self._optionsTable then
-    self._optionsTable = {
+function _getOptionsTable()
+  if not options then
+    options = {
       type = "group",
       args = {
         general = {
           type = "group",
           name = "", -- this is required!
           args = {
-            healthbarwidth = {
-              name = "Health Bar Width",
-              desc = "Health Bar Width Size",
-              type = "range",
-              min = self._MIN_BAR_SIZE, max = self._MAX_BAR_SIZE,
-              step = self._STEP,
-              get = _getOption,
-              set = _setOption,
-              order = 0,
-            },
-            healthbarheight = {
-              name = "Health Bar Height",
-              desc = "Health Bar Height Size",
-              type = "range",
-              min = self._MIN_BAR_SIZE, max = self._MAX_BAR_SIZE,
-              step = self._STEP,
-              get = _getOption,
-              set = _setOption,
-              order = 1,
-            },
-            powerbarwidth = {
-              name = "Power Bar Width",
-              desc = "Power Bar Width Size",
-              type = "range",
-              min = self._MIN_BAR_SIZE, max = self._MAX_BAR_SIZE,
-              step = self._STEP,
-              get = _getOption,
-              set = _setOption,
-              order = 2,
+            openPlayerHealth = {
+              name = "Player Health",
+              type = "execute",
+              func = function()
+                InterfaceOptionsFrame_OpenToCategory(ZxSimpleUI.optionFrameTable.PlayerHealth)
+              end
             }
+            -- powerbarwidth = {
+            --   name = "Power Bar Width",
+            --   desc = "Power Bar Width Size",
+            --   type = "range",
+            --   min = CoreOptionsInterface._MIN_BAR_SIZE, max = CoreOptionsInterface._MAX_BAR_SIZE,
+            --   step = 2,
+            --   get = _getOption,
+            --   set = _setOption,
+            --   order = _incrementOrderIndex(),
+            -- },
           }
         }
       }
     }
+
+    for k,v in pairs(ZxSimpleUI.moduleOptionsTable) do
+      options.args[k] = (type(v) == "function") and v() or v
+    end
   end
 
-  return self._optionsTable
+  return options
 end
 
 ---@param infoTable table
@@ -91,5 +92,27 @@ function _setOption(infoTable, value)
   -- Not sure how this gets the key... but it does
   local key = infoTable[#infoTable]
   ZxSimpleUI.db.profile[key] = value
+  ZxSimpleUI:refreshConfig()
+end
+
+function _incrementOrderIndex()
+  local i = _orderIndex
+  _orderIndex = _orderIndex + 1
+  return _orderIndex
+end
+
+function _handle_healthbar_positionx_center()
+  local width = _curDbProfile.healthbar_width
+
+  local centerXPos = math.floor(CoreOptionsInterface._SCREEN_WIDTH / 2 - width / 2)
+  _curDbProfile.healthbar_positionx = centerXPos
+  ZxSimpleUI:refreshConfig()
+end
+
+function _handle_healthbar_positiony_center()
+  local height = _curDbProfile.healthbar_height
+
+  local centerYPos = math.floor(CoreOptionsInterface._SCREEN_HEIGHT / 2 - height / 2)
+  _curDbProfile.healthbar_positiony = centerYPos
   ZxSimpleUI:refreshConfig()
 end
