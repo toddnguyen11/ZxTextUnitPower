@@ -8,7 +8,7 @@ local CoreOptionsInterface = ZxSimpleUI:NewModule("Options", nil)
 CoreOptionsInterface._MIN_BAR_SIZE = 10
 CoreOptionsInterface._MAX_BAR_SIZE = math.floor(GetScreenWidth() / 2)
 CoreOptionsInterface._APP_NAME = "ZxSimpleUI"
-CoreOptionsInterface._STEP = 4
+CoreOptionsInterface._STEP = 2
 
 -- PRIVATE functions and variables
 ---@param key string
@@ -46,7 +46,18 @@ function CoreOptionsInterface:_getOptionsTable()
               min = self._MIN_BAR_SIZE, max = self._MAX_BAR_SIZE,
               step = self._STEP,
               get = _getOption,
-              set = _setOption
+              set = _setOption,
+              order = 0,
+            },
+            healthbarheight = {
+              name = "Health Bar Height",
+              desc = "Health Bar Height Size",
+              type = "range",
+              min = self._MIN_BAR_SIZE, max = self._MAX_BAR_SIZE,
+              step = self._STEP,
+              get = _getOption,
+              set = _setOption,
+              order = 1,
             },
             powerbarwidth = {
               name = "Power Bar Width",
@@ -55,7 +66,8 @@ function CoreOptionsInterface:_getOptionsTable()
               min = self._MIN_BAR_SIZE, max = self._MAX_BAR_SIZE,
               step = self._STEP,
               get = _getOption,
-              set = _setOption
+              set = _setOption,
+              order = 2,
             }
           }
         }
@@ -79,21 +91,5 @@ function _setOption(infoTable, value)
   -- Not sure how this gets the key... but it does
   local key = infoTable[#infoTable]
   ZxSimpleUI.db.profile[key] = value
-  _applySettings()
-end
-
-function _applySettings()
-  local db = ZxSimpleUI.db.profile
-
-  for k,v in ZxSimpleUI:IterateModules() do
-    if ZxSimpleUI:isModuleEnabled(k) and not v:IsEnabled() then
-      ZxSimpleUI:EnableModule(k)
-    elseif not ZxSimpleUI:isModuleEnabled(k) and v:IsEnabled() then
-      ZxSimpleUI:DisableModule(k)
-    end
-
-    -- if type(v.ApplySettings) == "function" then
-    --   v:ApplySettings()
-    -- end
-  end
+  ZxSimpleUI:refreshConfig()
 end

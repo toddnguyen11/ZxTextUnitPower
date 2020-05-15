@@ -5,20 +5,30 @@ local AceGUI = LibStub("AceGUI-3.0")
 local media = LibStub("LibSharedMedia-3.0")
 
 --- "PRIVATE" variables
-local _HealthBarFrame
 local _defaults = {
   profile = {
     modules = { ["*"] = true },
     healthbarwidth = 100,
+    healthbarheight = 100,
     powerbarwidth = 100,
   }
+}
+
+ZxSimpleUI.frameBackdropTable = {
+	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+	edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+	tile = true, tileSize = 32, edgeSize = 32,
+	insets = { left = 8, right = 8, top = 8, bottom = 8 }
 }
 
 function ZxSimpleUI:OnInitialize()
   ---Must initialize db AFTER SavedVariables is loaded!
   self.db = LibStub("AceDB-3.0"):New("ZxSimpleUI_DB", _defaults, true)
+  self.db.RegisterCallback(self, "OnProfileChanged", "refreshConfig")
+  self.db.RegisterCallback(self, "OnProfileCopied", "refreshConfig")
+  self.db.RegisterCallback(self, "OnProfileReset", "refreshConfig")
+
   self:Print(ChatFrame1, "YO")
-  self:CreateSimpleGroup()
   -- self:CreateFrame()
 end
 
@@ -38,38 +48,20 @@ end
 --   frame:AddChild(healthbar)
 -- end
 
-local _FrameBackdropTable = {
-	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-	edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-	tile = true, tileSize = 32, edgeSize = 32,
-	insets = { left = 8, right = 8, top = 8, bottom = 8 }
-}
-
-function ZxSimpleUI:CreateSimpleGroup()
-  _HealthBarFrame = CreateFrame("Frame", nil, UIParent)
-  _HealthBarFrame:SetPoint("CENTER", nil, nil, 0, 0)
-  _HealthBarFrame:SetBackdrop(_FrameBackdropTable)
-  _HealthBarFrame:SetBackdropColor(1, 0, 0, 1)
-  _HealthBarFrame:SetWidth(200)
-  _HealthBarFrame:SetHeight(200)
-
-  _HealthBarFrame.StatusBar = CreateFrame("StatusBar", nil, _HealthBarFrame)
-  _HealthBarFrame.StatusBar:SetPoint("LEFT", _HealthBarFrame, "LEFT")
-  _HealthBarFrame.StatusBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-  _HealthBarFrame.StatusBar:SetStatusBarColor(1, 0, 0, 1)
-  _HealthBarFrame.StatusBar:SetWidth(_HealthBarFrame:GetWidth())
-  _HealthBarFrame.StatusBar:SetHeight(_HealthBarFrame:GetHeight())
-
-  _HealthBarFrame.Text = _HealthBarFrame:CreateFontString(nil, "OVERLAY")
-  _HealthBarFrame.Text:SetFont("Interface\\AddOns\\ZxSimpleUI\\fonts\\PTSansBold.ttf", 16, "OUTLINE")
-  _HealthBarFrame.Text:SetTextColor(0.0, 0.0, 0.0, 1.0)
-  _HealthBarFrame.Text:SetText("HELLO THERE")
-  _HealthBarFrame.Text:SetPoint("LEFT", _HealthBarFrame, "LEFT", 0, 0)
-
-  _HealthBarFrame:Show()
-  print(_HealthBarFrame:GetWidth())
-end
-
 function ZxSimpleUI:isModuleEnabled(module)
   return self.db.profile.modules[module]
+end
+
+function ZxSimpleUI:refreshConfig()
+  for k,v in ZxSimpleUI:IterateModules() do
+    if ZxSimpleUI:isModuleEnabled(k) and not v:IsEnabled() then
+      ZxSimpleUI:EnableModule(k)
+    elseif not ZxSimpleUI:isModuleEnabled(k) and v:IsEnabled() then
+      ZxSimpleUI:DisableModule(k)
+    end
+
+    if type(v.refreshConfig) == "function" then
+      v:refreshConfig()
+    end
+  end
 end

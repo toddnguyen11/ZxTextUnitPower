@@ -8,3 +8,5 @@
 embeds.xml
 Core.lua
 CoreOptionsInterface.lua
+
+modules\PlayerHealth.lua
