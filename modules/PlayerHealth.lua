@@ -4,7 +4,7 @@ local _MODULE_NAME = "PlayerHealth"
 local _DECORATIVE_NAME = "Player Health"
 local PlayerHealth = ZxSimpleUI:NewModule(_MODULE_NAME)
 PlayerHealth.MODULE_NAME = _MODULE_NAME
-local SharedMedia = LibStub("LibSharedMedia-3.0")
+local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
 local LibStub, GetScreenWidth, GetScreenHeight = LibStub, GetScreenWidth, GetScreenHeight
@@ -28,7 +28,8 @@ local _defaults = {
     height = 200,
     positionx = 1,
     positiony = 1,
-    fontsize = 14
+    fontsize = 14,
+    font = "Friz Quadrata TT"
   }
 }
 
@@ -49,14 +50,14 @@ function PlayerHealth:refreshConfig()
   if self:IsEnabled() then
     self._HealthBarFrame:SetWidth(_curDbProfile.width)
     self._HealthBarFrame:SetHeight(_curDbProfile.height)
-    self._HealthBarFrame.Text:SetFont(
-      self._Font, _curDbProfile.fontsize, "OUTLINE"
-    )
     self._HealthBarFrame:SetPoint(
       "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
       _curDbProfile.positionx,
       _curDbProfile.positiony
     )
+    self._HealthBarFrame.Text:SetFont(
+      media:Fetch("font", _curDbProfile.font),
+      _curDbProfile.fontsize, "OUTLINE")
   end
 end
 
@@ -73,8 +74,10 @@ function PlayerHealth:CreateSimpleGroup()
   self._HealthBarFrame.StatusBar:SetHeight(self._HealthBarFrame:GetHeight())
 
   self._HealthBarFrame.Text = self._HealthBarFrame:CreateFontString(nil, "OVERLAY")
-  self._HealthBarFrame.Text:SetFont("Interface\\AddOns\\ZxSimpleUI\\fonts\\PTSansBold.ttf", 16, "OUTLINE")
-  self._HealthBarFrame.Text:SetTextColor(0.0, 0.0, 0.0, 1.0)
+  self._HealthBarFrame.Text:SetFont(
+      media:Fetch("font", _curDbProfile.font),
+      _curDbProfile.fontsize, "OUTLINE")
+  self._HealthBarFrame.Text:SetTextColor(1.0, 1.0, 1.0, 1.0)
   self._HealthBarFrame.Text:SetText("HELLO THERE")
   self._HealthBarFrame.Text:SetPoint("LEFT", self._HealthBarFrame, "LEFT", 0, 0)
 
@@ -161,6 +164,15 @@ function PlayerHealth:_getOptionTable()
           set = _setOption,
           order = _incrementOrderIndex(),
         },
+        -- LSM30_ is LibSharedMedia's custom controls
+        font = {
+          name = "Health Bar Font",
+          desc = "Health Bar Font",
+          type = "select",
+          dialogControl = "LSM30_Font",
+          values = media:HashTable("font"),
+          order = _incrementOrderIndex()
+        }
       }
     }
   end

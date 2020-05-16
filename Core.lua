@@ -1,8 +1,10 @@
 local ZxSimpleUI = LibStub("AceAddon-3.0"):NewAddon("ZxSimpleUI", "AceConsole-3.0", "AceEvent-3.0")
 local AceConfig = LibStub("AceConfig-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
----LibSharedMedia
+
+---LibSharedMedia registers
 local media = LibStub("LibSharedMedia-3.0")
+media:Register("font", "PT Sans Bold", "Interface\\AddOns\\ZxSimpleUI\\fonts\\PTSansBold.ttf")
 
 --- "CONSTANTS"
 ZxSimpleUI.ADDON_NAME = "ZxSimpleUI"
