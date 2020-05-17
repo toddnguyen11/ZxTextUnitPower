@@ -22,8 +22,6 @@ local _timeSinceLastUpdate = 0
 local _prevPowerValue = UnitPowerMax("PLAYER")
 local _playerClass = UnitClass("PLAYER")
 
-PlayerPower._SCREEN_WIDTH = math.floor(GetScreenWidth())
-PlayerPower._SCREEN_HEIGHT = math.floor(GetScreenHeight())
 PlayerPower._UPDATE_INTERVAL_SECONDS = 0.15
 PlayerPower._PowerBarFrame = nil
 
@@ -137,7 +135,7 @@ function PlayerPower:_getOptionTable()
           name = "Power Bar Width",
           desc = "Power Bar Width Size",
           type = "range",
-          min = 0, max = math.floor(self._SCREEN_WIDTH / 2),
+          min = 0, max = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2),
           step = 2,
           get = _getOption,
           set = _setOption,
@@ -147,7 +145,7 @@ function PlayerPower:_getOptionTable()
           name = "Power Bar Height",
           desc = "Power Bar Height Size",
           type = "range",
-          min = 0, max = math.floor(self._SCREEN_WIDTH / 2),
+          min = 0, max = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2),
           step = 2,
           get = _getOption,
           set = _setOption,
@@ -157,7 +155,7 @@ function PlayerPower:_getOptionTable()
           name = "Power Bar X",
           desc = "Power Bar X Position",
           type = "range",
-          min = 0, max = self._SCREEN_WIDTH,
+          min = 0, max = ZxSimpleUI.SCREEN_WIDTH,
           step = 1,
           get = _getOption,
           set = _setOption,
@@ -174,7 +172,7 @@ function PlayerPower:_getOptionTable()
           name = "Power Bar Y",
           desc = "Power Bar Y Position",
           type = "range",
-          min = 0, max = self._SCREEN_HEIGHT,
+          min = 0, max = ZxSimpleUI.SCREEN_HEIGHT,
           step = 1,
           get = _getOption,
           set = _setOption,
@@ -281,7 +279,7 @@ end
 function _handlePositionXCenter()
   local width = _curDbProfile.width
 
-  local centerXPos = math.floor(PlayerPower._SCREEN_WIDTH / 2 - width / 2)
+  local centerXPos = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2 - width / 2)
   _curDbProfile.positionx = centerXPos
   PlayerPower:refreshConfig()
 end
@@ -289,7 +287,7 @@ end
 function _handlePositionYCenter()
   local height = _curDbProfile.height
 
-  local centerYPos = math.floor(PlayerPower._SCREEN_HEIGHT / 2 - height / 2)
+  local centerYPos = math.floor(ZxSimpleUI.SCREEN_HEIGHT / 2 - height / 2)
   _curDbProfile.positiony = centerYPos
   PlayerPower:refreshConfig()
 end

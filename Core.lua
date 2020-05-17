@@ -9,6 +9,8 @@ media:Register("font", "PT Sans Bold", "Interface\\AddOns\\ZxSimpleUI\\fonts\\PT
 --- "CONSTANTS"
 ZxSimpleUI.ADDON_NAME = "ZxSimpleUI"
 ZxSimpleUI.DECORATIVE_NAME = "Zx Simple UI"
+ZxSimpleUI.SCREEN_WIDTH = math.floor(GetScreenWidth())
+ZxSimpleUI.SCREEN_HEIGHT = math.floor(GetScreenHeight())
 
 --- "PRIVATE" variables
 local _defaults = {
