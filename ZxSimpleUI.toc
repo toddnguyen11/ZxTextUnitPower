@@ -8,6 +8,9 @@
 embeds.xml
 Core.lua
 CoreOptionsInterface.lua
+CoreBarTemplate.lua
 
 modules\PlayerHealth.lua
 modules\PlayerPower.lua
+modules\TargetHealth.lua
+modules\TargetPower.lua
