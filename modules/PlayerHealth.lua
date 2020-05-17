@@ -37,8 +37,8 @@ local _defaults = {
 
 local _frameBackdropTable = {
   bgFile = "Interface\\DialogFrame\\UI-Tooltip-Background",
-  tile = true, tileSize = 32, edgeSize = 32,
-  insets = { left = 8, right = 8, top = 8, bottom = 8 }
+  tile = true, tileSize = 16, edgeSize = 16,
+  insets = { left = 4, right = 4, top = 4, bottom = 4 }
 }
 
 function PlayerHealth:OnInitialize()
