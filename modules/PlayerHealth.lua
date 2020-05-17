@@ -8,12 +8,13 @@ local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
 local LibStub, GetScreenWidth, GetScreenHeight = LibStub, GetScreenWidth, GetScreenHeight
-local UIParent, CreateFrame = UIParent, CreateFrame
+local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
 
 -- "PRIVATE" variables
 local _getOption, _setOption
 local _curDbProfile
-local _handle_positionx_center, _handle_positiony_center
+local _handle_positionx_center, _handle_positiony_center, _handle_unit_health_event
+local _get_health_percent
 local _incrementOrderIndex
 local _orderIndex = 1
 PlayerHealth._SCREEN_WIDTH = math.floor(GetScreenWidth())
@@ -29,8 +30,15 @@ local _defaults = {
     positionx = 1,
     positiony = 1,
     fontsize = 14,
-    font = "Friz Quadrata TT"
+    font = "Friz Quadrata TT",
+    texture = "Blizzard"
   }
+}
+
+local _frameBackdropTable = {
+  bgFile = "Interface\\DialogFrame\\UI-Tooltip-Background",
+  tile = true, tileSize = 32, edgeSize = 32,
+  insets = { left = 8, right = 8, top = 8, bottom = 8 }
 }
 
 function PlayerHealth:OnInitialize()
@@ -48,8 +56,7 @@ end
 
 function PlayerHealth:refreshConfig()
   if self:IsEnabled() then
-    self._HealthBarFrame:SetWidth(_curDbProfile.width)
-    self._HealthBarFrame:SetHeight(_curDbProfile.height)
+    self:_setFrameWidthHeight()
     self._HealthBarFrame:SetPoint(
       "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
       _curDbProfile.positionx,
@@ -57,32 +64,46 @@ function PlayerHealth:refreshConfig()
     )
     self._HealthBarFrame.Text:SetFont(
       media:Fetch("font", _curDbProfile.font),
-      _curDbProfile.fontsize, "OUTLINE")
+      _curDbProfile.fontsize, "OUTLINE"
+    )
+    self._HealthBarFrame.StatusBar:SetStatusBarTexture(media:Fetch("statusbar", _curDbProfile.texture))
+    
+    _frameBackdropTable.edgeFile = media:Fetch("border", _curDbProfile.border)
+    self._HealthBarFrame:SetBackdrop(_frameBackdropTable)
   end
 end
 
 function PlayerHealth:CreateSimpleGroup()
   self._HealthBarFrame = CreateFrame("Frame", nil, UIParent)
-  self._HealthBarFrame:SetBackdrop(ZxSimpleUI.frameBackdropTable)
+  self._HealthBarFrame:SetBackdrop(_frameBackdropTable)
   self._HealthBarFrame:SetBackdropColor(1, 0, 0, 1)
+  self._HealthBarFrame:SetPoint(
+    "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
+    _curDbProfile.positionx,
+    _curDbProfile.positiony
+  )
 
   self._HealthBarFrame.StatusBar = CreateFrame("StatusBar", nil, self._HealthBarFrame)
-  self._HealthBarFrame.StatusBar:SetPoint("LEFT", self._HealthBarFrame, "LEFT")
-  self._HealthBarFrame.StatusBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
+  self._HealthBarFrame.StatusBar:ClearAllPoints()
+  self._HealthBarFrame.StatusBar:SetPoint("CENTER", self._HealthBarFrame, "CENTER")
+  self._HealthBarFrame.StatusBar:SetStatusBarTexture(media:Fetch("statusbar", _curDbProfile.texture))
+  self._HealthBarFrame.StatusBar:GetStatusBarTexture():SetHorizTile(false)
+  self._HealthBarFrame.StatusBar:GetStatusBarTexture():SetVertTile(false)
   self._HealthBarFrame.StatusBar:SetStatusBarColor(1, 0, 0, 1)
-  self._HealthBarFrame.StatusBar:SetWidth(self._HealthBarFrame:GetWidth())
-  self._HealthBarFrame.StatusBar:SetHeight(self._HealthBarFrame:GetHeight())
+  self._HealthBarFrame.StatusBar:SetMinMaxValues(0, 1)
+  self:_setFrameWidthHeight()
 
-  self._HealthBarFrame.Text = self._HealthBarFrame:CreateFontString(nil, "OVERLAY")
+  self._HealthBarFrame.Text = self._HealthBarFrame.StatusBar:CreateFontString(nil, "OVERLAY")
   self._HealthBarFrame.Text:SetFont(
       media:Fetch("font", _curDbProfile.font),
       _curDbProfile.fontsize, "OUTLINE")
   self._HealthBarFrame.Text:SetTextColor(1.0, 1.0, 1.0, 1.0)
-  self._HealthBarFrame.Text:SetText("HELLO THERE")
-  self._HealthBarFrame.Text:SetPoint("LEFT", self._HealthBarFrame, "LEFT", 0, 0)
+  self._HealthBarFrame.Text:SetPoint("CENTER", self._HealthBarFrame.StatusBar, "CENTER", 0, 0)
+  self._HealthBarFrame.Text:SetText(string.format("%.1f%%", _get_health_percent() * 100.0))
 
+  self._HealthBarFrame:RegisterEvent("UNIT_HEALTH")
+  self._HealthBarFrame:SetScript("OnEvent", _handle_unit_health_event)
   self._HealthBarFrame:Show()
-  ZxSimpleUI:Print(self._HealthBarFrame:GetWidth())
 end
 
 -- ####################################
@@ -172,6 +193,22 @@ function PlayerHealth:_getOptionTable()
           dialogControl = "LSM30_Font",
           values = media:HashTable("font"),
           order = _incrementOrderIndex()
+        },
+        texture = {
+          name = "Health Bar Texture",
+          desc = "Health Bar Texture",
+          type = "select",
+          dialogControl = "LSM30_Statusbar",
+          values = media:HashTable("statusbar"),
+          order = _incrementOrderIndex()
+        },
+        border = {
+          name = "Health Bar Border",
+          desc = "Health Bar Border",
+          type = "select",
+          dialogControl = "LSM30_Border",
+          values = media:HashTable("border"),
+          order = _incrementOrderIndex()
         }
       }
     }
@@ -215,4 +252,26 @@ function _handle_positiony_center()
   local centerYPos = math.floor(PlayerHealth._SCREEN_HEIGHT / 2 - height / 2)
   _curDbProfile.positiony = centerYPos
   PlayerHealth:refreshConfig()
+end
+
+function _handle_unit_health_event(self, event, unit)
+  if (unit == "player") then
+    local healthPercent = _get_health_percent()
+    PlayerHealth._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercent * 100.0))
+    PlayerHealth._HealthBarFrame.StatusBar:SetValue(healthPercent)
+  end
+end
+
+---@return number
+function _get_health_percent()
+  local curUnitHealth = UnitHealth("Player")
+  local maxUnitHealth = UnitHealthMax("Player")
+  return curUnitHealth / maxUnitHealth
+end
+
+function PlayerHealth:_setFrameWidthHeight()
+  self._HealthBarFrame:SetWidth(_curDbProfile.width)
+  self._HealthBarFrame:SetHeight(_curDbProfile.height)
+  self._HealthBarFrame.StatusBar:SetWidth(self._HealthBarFrame:GetWidth())
+  self._HealthBarFrame.StatusBar:SetHeight(self._HealthBarFrame:GetHeight())
 end

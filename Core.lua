@@ -20,13 +20,6 @@ local _defaults = {
 ZxSimpleUI.moduleOptionsTable = {}
 ZxSimpleUI.optionFrameTable = {}
 
-ZxSimpleUI.frameBackdropTable = {
-	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-	edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-	tile = true, tileSize = 32, edgeSize = 32,
-	insets = { left = 8, right = 8, top = 8, bottom = 8 }
-}
-
 function ZxSimpleUI:OnInitialize()
   ---Must initialize db AFTER SavedVariables is loaded!
   local dbName = self.ADDON_NAME .. "_DB"
