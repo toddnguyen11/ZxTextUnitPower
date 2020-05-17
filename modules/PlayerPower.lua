@@ -16,7 +16,6 @@ local unpack = unpack
 local _getOption, _setOption, _getOptionColor, _setOptionColor
 local _curDbProfile
 local _handle_positionx_center, _handle_positiony_center, _handle_unit_power_event
-local _get_power_percent
 local _incrementOrderIndex
 local _orderIndex = 1
 local _prevPowerValue = UnitPowerMax("PLAYER")
@@ -56,14 +55,13 @@ function PlayerPower:OnInitialize()
   self:_setDefaultColor()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   _curDbProfile = self.db.profile
-  self:_setDefaultColor()
-  self:CreateBar()
 
   self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
   ZxSimpleUI:registerModuleOptions(_MODULE_NAME, self:_getOptionTable(), _DECORATIVE_NAME)
 end
 
 function PlayerPower:OnEnable()
+  self:CreateBar()
   self:refreshConfig()
 end
 
@@ -76,6 +74,10 @@ function PlayerPower:refreshConfig()
 end
 
 function PlayerPower:CreateBar()
+  local curUnitPower = UnitPower("PLAYER")
+  local maxUnitPower = UnitPowerMax("PLAYER")
+  local powerPercent = curUnitPower / maxUnitPower
+
   self._PowerBarFrame = CreateFrame("Frame", nil, UIParent)
   self._PowerBarFrame:SetBackdrop(_frameBackdropTable)
   self._PowerBarFrame:SetBackdropColor(1, 0, 0, 1)
@@ -97,6 +99,7 @@ function PlayerPower:CreateBar()
   self._PowerBarFrame.StatusBar:GetStatusBarTexture():SetVertTile(false)
   self._PowerBarFrame.StatusBar:SetStatusBarColor(unpack(_curDbProfile.color))
   self._PowerBarFrame.StatusBar:SetMinMaxValues(0, 1)
+  self._PowerBarFrame.StatusBar:SetValue(powerPercent)
   self:_setFrameWidthHeight()
 
   self._PowerBarFrame.Text = self._PowerBarFrame.StatusBar:CreateFontString(nil, "OVERLAY")
@@ -105,7 +108,7 @@ function PlayerPower:CreateBar()
       _curDbProfile.fontsize, "OUTLINE")
   self._PowerBarFrame.Text:SetTextColor(1.0, 1.0, 1.0, 1.0)
   self._PowerBarFrame.Text:SetPoint("CENTER", self._PowerBarFrame.StatusBar, "CENTER", 0, 0)
-  self._PowerBarFrame.Text:SetText(string.format("%.1f%%", _get_power_percent() * 100.0))
+  self._PowerBarFrame.Text:SetText(string.format("%.1f%%", powerPercent * 100.0))
 
   self:_registerEvents()
   self._PowerBarFrame:SetScript("OnUpdate", _handle_unit_power_event)
@@ -279,21 +282,14 @@ function _handle_positiony_center()
 end
 
 function _handle_unit_power_event(self, event, unit)
-  local curUnitPower = UnitPower("Player")
+  local curUnitPower = UnitPower("PLAYER")
   if (curUnitPower ~= _prevPowerValue) then
     _prevPowerValue = curUnitPower
-    local maxUnitPower = UnitPowerMax("Player")
-    local PowerPercent = curUnitPower / maxUnitPower
-    PlayerPower._PowerBarFrame.Text:SetText(string.format("%.1f%%", PowerPercent * 100.0))
-    PlayerPower._PowerBarFrame.StatusBar:SetValue(PowerPercent)
+    local maxUnitPower = UnitPowerMax("PLAYER")
+    local powerPercent = curUnitPower / maxUnitPower
+    PlayerPower._PowerBarFrame.Text:SetText(string.format("%.1f%%", powerPercent * 100.0))
+    PlayerPower._PowerBarFrame.StatusBar:SetValue(powerPercent)
   end
-end
-
----@return number
-function _get_power_percent()
-  local curUnitPower = UnitPower("Player")
-  local maxUnitPower = UnitPowerMax("Player")
-  return curUnitPower / maxUnitPower
 end
 
 function PlayerPower:_setFrameWidthHeight()

@@ -46,13 +46,13 @@ local _frameBackdropTable = {
 function PlayerHealth:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   _curDbProfile = self.db.profile
-  self:CreateBar()
 
   self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
   ZxSimpleUI:registerModuleOptions(_MODULE_NAME, self:_getOptionTable(), _DECORATIVE_NAME)
 end
 
 function PlayerHealth:OnEnable()
+  self:CreateBar()
   self:refreshConfig()
 end
 
@@ -65,9 +65,9 @@ function PlayerHealth:refreshConfig()
 end
 
 function PlayerHealth:CreateBar()
-  local currentHealth = UnitHealth("Player")
-  local maxHealth = UnitHealthMax("Player")
-  local healthPercentage = maxHealth / currentHealth
+  local curUnitHealth = UnitHealth("Player")
+  local maxUnitHealth = UnitHealthMax("Player")
+  local healthPercent = curUnitHealth / maxUnitHealth
 
   self._HealthBarFrame = CreateFrame("Frame", nil, UIParent)
   self._HealthBarFrame:SetBackdrop(_frameBackdropTable)
@@ -90,7 +90,7 @@ function PlayerHealth:CreateBar()
   self._HealthBarFrame.StatusBar:GetStatusBarTexture():SetVertTile(false)
   self._HealthBarFrame.StatusBar:SetStatusBarColor(unpack(_curDbProfile.color))
   self._HealthBarFrame.StatusBar:SetMinMaxValues(0, 1)
-  self._HealthBarFrame.StatusBar:SetValue(healthPercentage)
+  self._HealthBarFrame.StatusBar:SetValue(healthPercent)
   self:_setFrameWidthHeight()
 
   self._HealthBarFrame.Text = self._HealthBarFrame.StatusBar:CreateFontString(nil, "OVERLAY")
@@ -99,7 +99,7 @@ function PlayerHealth:CreateBar()
       _curDbProfile.fontsize, "OUTLINE")
   self._HealthBarFrame.Text:SetTextColor(1.0, 1.0, 1.0, 1.0)
   self._HealthBarFrame.Text:SetPoint("CENTER", self._HealthBarFrame.StatusBar, "CENTER", 0, 0)
-  self._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercentage * 100.0))
+  self._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercent * 100.0))
 
   self:_registerEvents()
   self._HealthBarFrame:SetScript("OnUpdate", _handle_unit_health_event)
