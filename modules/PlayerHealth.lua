@@ -53,7 +53,7 @@ function PlayerHealth:OnInitialize()
 end
 
 function PlayerHealth:OnEnable()
-  self:CreateBar()
+  self:createBar()
   self:refreshConfig()
 end
 
@@ -65,7 +65,7 @@ function PlayerHealth:refreshConfig()
   end
 end
 
-function PlayerHealth:CreateBar()
+function PlayerHealth:createBar()
   local curUnitHealth = UnitHealth("Player")
   local maxUnitHealth = UnitHealthMax("Player")
   local healthPercent = curUnitHealth / maxUnitHealth

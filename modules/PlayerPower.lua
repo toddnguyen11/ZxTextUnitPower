@@ -9,18 +9,19 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub, GetScreenWidth, GetScreenHeight = LibStub, GetScreenWidth, GetScreenHeight
 local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower, UnitPowerMax
-local UnitClass = UnitClass
+local UnitClass, UnitPowerType = UnitClass, UnitPowerType
 local unpack = unpack
 
 -- "PRIVATE" variables
 local _getOption, _setOption, _getOptionColor, _setOptionColor
 local _curDbProfile
-local _handlePositionXCenter, _handlePositionYCenter, _onUpdateHandler
+local _handlePositionXCenter, _handlePositionYCenter, _onUpdateHandler, _onEventHandler
 local _incrementOrderIndex
 local _orderIndex = 1
 local _timeSinceLastUpdate = 0
 local _prevPowerValue = UnitPowerMax("PLAYER")
 local _playerClass = UnitClass("PLAYER")
+local _playerPower, _playerPowerString
 
 PlayerPower._UPDATE_INTERVAL_SECONDS = 0.15
 PlayerPower._PowerBarFrame = nil
@@ -40,11 +41,11 @@ local _defaults = {
   }
 }
 
-local _powerEventTable = {}
-table.insert(_powerEventTable, "UNIT_MANA")
-table.insert(_powerEventTable, "UNIT_RAGE")
-table.insert(_powerEventTable, "UNIT_ENERGY")
-table.insert(_powerEventTable, "UNIT_RUNIC_POWER")
+local _powerEventColorTable = {}
+_powerEventColorTable["UNIT_MANA"] = {0.0, 0.0, 1.0, 1.0}
+_powerEventColorTable["UNIT_RAGE"] = {1.0, 0.0, 0.0, 1.0}
+_powerEventColorTable["UNIT_ENERGY"] = {1.0, 1.0, 0.0, 1.0}
+_powerEventColorTable["UNIT_RUNIC_POWER"] = {0.0, 1.0, 1.0, 1.0}
 
 local _frameBackdropTable = {
   bgFile = "Interface\\DialogFrame\\UI-Tooltip-Background",
@@ -53,7 +54,6 @@ local _frameBackdropTable = {
 }
 
 function PlayerPower:OnInitialize()
-  self:_setDefaultColor()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   _curDbProfile = self.db.profile
 
@@ -62,7 +62,9 @@ function PlayerPower:OnInitialize()
 end
 
 function PlayerPower:OnEnable()
-  self:CreateBar()
+  self:_setUnitPowerType()
+  self:_setDefaultColor()
+  self:createBar()
   self:refreshConfig()
 end
 
@@ -74,7 +76,7 @@ function PlayerPower:refreshConfig()
   end
 end
 
-function PlayerPower:CreateBar()
+function PlayerPower:createBar()
   local curUnitPower = UnitPower("PLAYER")
   local maxUnitPower = UnitPowerMax("PLAYER")
   local powerPercent = curUnitPower / maxUnitPower
@@ -113,6 +115,7 @@ function PlayerPower:CreateBar()
 
   self:_registerEvents()
   self._PowerBarFrame:SetScript("OnUpdate", _onUpdateHandler)
+  self._PowerBarFrame:SetScript("OnEvent", _onEventHandler)
   self._PowerBarFrame:Show()
 end
 
@@ -306,6 +309,20 @@ function _onUpdateHandler(self, elapsed)
   end
 end
 
+function _onEventHandler(self, event, unit)
+  local upperEvent = string.upper(event)
+  local upperUnit = string.upper(unit)
+  if (upperEvent == "UNIT_DISPLAYPOWER" and upperUnit == "PLAYER") then
+    PlayerPower:_handlePowerChanged()
+  end
+end
+
+function PlayerPower:_handlePowerChanged()
+  self:_setUnitPowerType()
+  self:_setDefaultColor()
+  self:refreshConfig()
+end
+
 ---@param curUnitPower number
 function PlayerPower:_setPowerValue(curUnitPower)
   curUnitPower = curUnitPower or UnitPower("PLAYER")
@@ -345,16 +362,20 @@ function PlayerPower:_refreshStatusBar()
 end
 
 function PlayerPower:_registerEvents()
-  for _, powerEvent in ipairs(_powerEventTable) do
+  for powerEvent, _ in pairs(_powerEventColorTable) do
     self._PowerBarFrame:RegisterEvent(powerEvent)
   end
+  -- Register Druid's shapeshift form
+  self._PowerBarFrame:RegisterEvent("UNIT_DISPLAYPOWER")
+end
+
+function PlayerPower:_setUnitPowerType()
+  _playerPower, _playerPowerString = UnitPowerType("PLAYER")
 end
 
 function PlayerPower:_setDefaultColor()
-  local classUpper = string.upper(_playerClass)
-  if classUpper == "ROGUE" then
-    _defaults.profile.color = {1, 1, 0, 1}
-  elseif classUpper == "WARRIOR" then
-    _defaults.profile.color = {1, 0, 0, 1}
-  end
+  local powerTypeUpper = string.upper(_playerPowerString)
+  local colorTable = _powerEventColorTable["UNIT_" .. powerTypeUpper]
+  _defaults.profile.color = colorTable
+  _curDbProfile.color = colorTable
 end
