@@ -9,6 +9,7 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub, GetScreenWidth, GetScreenHeight = LibStub, GetScreenWidth, GetScreenHeight
 local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower, UnitPowerMax
+local UnitClass = UnitClass
 local unpack = unpack
 
 -- "PRIVATE" variables
@@ -19,6 +20,7 @@ local _get_power_percent
 local _incrementOrderIndex
 local _orderIndex = 1
 local _prevPowerValue = UnitPowerMax("PLAYER")
+local _playerClass = UnitClass("PLAYER")
 
 PlayerPower._SCREEN_WIDTH = math.floor(GetScreenWidth())
 PlayerPower._SCREEN_HEIGHT = math.floor(GetScreenHeight())
@@ -51,8 +53,10 @@ local _frameBackdropTable = {
 }
 
 function PlayerPower:OnInitialize()
+  self:_setDefaultColor()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   _curDbProfile = self.db.profile
+  self:_setDefaultColor()
   self:CreateBar()
 
   self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
@@ -323,5 +327,14 @@ end
 function PlayerPower:_registerEvents()
   for _, powerEvent in ipairs(_powerEventTable) do
     self._PowerBarFrame:RegisterEvent(powerEvent)
+  end
+end
+
+function PlayerPower:_setDefaultColor()
+  local classUpper = string.upper(_playerClass)
+  if classUpper == "ROGUE" then
+    _defaults.profile.color = {1, 1, 0, 1}
+  elseif classUpper == "WARRIOR" then
+    _defaults.profile.color = {1, 0, 0, 1}
   end
 end
