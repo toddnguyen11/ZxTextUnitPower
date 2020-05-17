@@ -15,14 +15,16 @@ local unpack = unpack
 -- "PRIVATE" variables
 local _getOption, _setOption, _getOptionColor, _setOptionColor
 local _curDbProfile
-local _handle_positionx_center, _handle_positiony_center, _handle_unit_power_event
+local _handlePositionXCenter, _handlePositionYCenter, _onUpdateHandler
 local _incrementOrderIndex
 local _orderIndex = 1
+local _timeSinceLastUpdate = 0
 local _prevPowerValue = UnitPowerMax("PLAYER")
 local _playerClass = UnitClass("PLAYER")
 
 PlayerPower._SCREEN_WIDTH = math.floor(GetScreenWidth())
 PlayerPower._SCREEN_HEIGHT = math.floor(GetScreenHeight())
+PlayerPower._UPDATE_INTERVAL_SECONDS = 0.15
 PlayerPower._PowerBarFrame = nil
 
 local _defaults = {
@@ -112,7 +114,7 @@ function PlayerPower:CreateBar()
   self._PowerBarFrame.Text:SetText(string.format("%.1f%%", powerPercent * 100.0))
 
   self:_registerEvents()
-  self._PowerBarFrame:SetScript("OnUpdate", _handle_unit_power_event)
+  self._PowerBarFrame:SetScript("OnUpdate", _onUpdateHandler)
   self._PowerBarFrame:Show()
 end
 
@@ -165,7 +167,7 @@ function PlayerPower:_getOptionTable()
           name = "Center Power Bar X",
           desc = "Center Power Bar X Position",
           type = "execute",
-          func = _handle_positionx_center,
+          func = _handlePositionXCenter,
           order = _incrementOrderIndex()
         },
         positiony = {
@@ -182,7 +184,7 @@ function PlayerPower:_getOptionTable()
           name = "Center Power Bar Y",
           desc = "Center Power Bar Y Position",
           type = "execute",
-          func = _handle_positiony_center,
+          func = _handlePositionYCenter,
           order = _incrementOrderIndex()
         },
         fontsize = {
@@ -276,7 +278,7 @@ function _incrementOrderIndex()
   return i
 end
 
-function _handle_positionx_center()
+function _handlePositionXCenter()
   local width = _curDbProfile.width
 
   local centerXPos = math.floor(PlayerPower._SCREEN_WIDTH / 2 - width / 2)
@@ -284,7 +286,7 @@ function _handle_positionx_center()
   PlayerPower:refreshConfig()
 end
 
-function _handle_positiony_center()
+function _handlePositionYCenter()
   local height = _curDbProfile.height
 
   local centerYPos = math.floor(PlayerPower._SCREEN_HEIGHT / 2 - height / 2)
@@ -292,15 +294,26 @@ function _handle_positiony_center()
   PlayerPower:refreshConfig()
 end
 
-function _handle_unit_power_event(self, event, unit)
+---@param self any
+---@param elapsed number
+function _onUpdateHandler(self, elapsed)
+  _timeSinceLastUpdate = _timeSinceLastUpdate + elapsed
   local curUnitPower = UnitPower("PLAYER")
-  if (curUnitPower ~= _prevPowerValue) then
+  if (_timeSinceLastUpdate > PlayerPower._UPDATE_INTERVAL_SECONDS)
+    and (curUnitPower ~= _prevPowerValue) then
+    PlayerPower:_setPowerValue(curUnitPower)
     _prevPowerValue = curUnitPower
-    local maxUnitPower = UnitPowerMax("PLAYER")
-    local powerPercent = curUnitPower / maxUnitPower
-    PlayerPower._PowerBarFrame.Text:SetText(string.format("%.1f%%", powerPercent * 100.0))
-    PlayerPower._PowerBarFrame.StatusBar:SetValue(powerPercent)
+    _timeSinceLastUpdate = 0
   end
+end
+
+---@param curUnitPower number
+function PlayerPower:_setPowerValue(curUnitPower)
+  curUnitPower = curUnitPower or UnitPower("PLAYER")
+  local maxUnitPower = UnitPowerMax("PLAYER")
+  local powerPercent = curUnitPower / maxUnitPower
+  PlayerPower._PowerBarFrame.Text:SetText(string.format("%.1f%%", powerPercent * 100.0))
+  PlayerPower._PowerBarFrame.StatusBar:SetValue(powerPercent)
 end
 
 function PlayerPower:_setFrameWidthHeight()
