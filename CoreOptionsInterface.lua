@@ -31,6 +31,10 @@ function CoreOptionsInterface:SetupOptions()
     LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
       ZxSimpleUI.ADDON_NAME, ZxSimpleUI.DECORATIVE_NAME, nil, "general"
     )
+
+  -- Set profile options
+  ZxSimpleUI:registerModuleOptions("Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(
+    ZxSimpleUI.db), "Profiles")
 end
 
 -- ########################################
@@ -54,6 +58,13 @@ function _getOptionsTable()
               type = "execute",
               func = function()
                 InterfaceOptionsFrame_OpenToCategory(ZxSimpleUI.optionFrameTable.PlayerHealth)
+              end
+            },
+            openPlayerPower = {
+              name = "Player Power",
+              type = "execute",
+              func = function()
+                InterfaceOptionsFrame_OpenToCategory(ZxSimpleUI.optionFrameTable.PlayerPower)
               end
             }
             -- powerbarwidth = {
