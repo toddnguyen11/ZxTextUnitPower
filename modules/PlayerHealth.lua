@@ -9,9 +9,10 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub, GetScreenWidth, GetScreenHeight = LibStub, GetScreenWidth, GetScreenHeight
 local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
+local unpack = unpack
 
 -- "PRIVATE" variables
-local _getOption, _setOption
+local _getOption, _setOption, _getOptionColor, _setOptionColor
 local _curDbProfile
 local _handle_positionx_center, _handle_positiony_center, _handle_unit_health_event
 local _get_health_percent
@@ -21,7 +22,6 @@ PlayerHealth._SCREEN_WIDTH = math.floor(GetScreenWidth())
 PlayerHealth._SCREEN_HEIGHT = math.floor(GetScreenHeight())
 
 PlayerHealth._HealthBarFrame = nil
-PlayerHealth._Font = "Interface\\AddOns\\ZxSimpleUI\\fonts\\PTSansBold.ttf"
 
 local _defaults = {
   profile = {
@@ -31,7 +31,8 @@ local _defaults = {
     positiony = 1,
     fontsize = 14,
     font = "Friz Quadrata TT",
-    texture = "Blizzard"
+    texture = "Blizzard",
+    color = {0.0, 1.0, 0.0, 1.0}
   }
 }
 
@@ -57,19 +58,8 @@ end
 function PlayerHealth:refreshConfig()
   if self:IsEnabled() then
     self:_setFrameWidthHeight()
-    self._HealthBarFrame:SetPoint(
-      "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
-      _curDbProfile.positionx,
-      _curDbProfile.positiony
-    )
-    self._HealthBarFrame.Text:SetFont(
-      media:Fetch("font", _curDbProfile.font),
-      _curDbProfile.fontsize, "OUTLINE"
-    )
-    self._HealthBarFrame.StatusBar:SetStatusBarTexture(media:Fetch("statusbar", _curDbProfile.texture))
-    
-    _frameBackdropTable.edgeFile = media:Fetch("border", _curDbProfile.border)
-    self._HealthBarFrame:SetBackdrop(_frameBackdropTable)
+    self:_refreshHealthBarFrame()
+    self:_refreshStatusBar()
   end
 end
 
@@ -93,7 +83,7 @@ function PlayerHealth:CreateBar()
   self._HealthBarFrame.StatusBar:SetStatusBarTexture(media:Fetch("statusbar", _curDbProfile.texture))
   self._HealthBarFrame.StatusBar:GetStatusBarTexture():SetHorizTile(false)
   self._HealthBarFrame.StatusBar:GetStatusBarTexture():SetVertTile(false)
-  self._HealthBarFrame.StatusBar:SetStatusBarColor(1, 0, 0, 1)
+  self._HealthBarFrame.StatusBar:SetStatusBarColor(unpack(_curDbProfile.color))
   self._HealthBarFrame.StatusBar:SetMinMaxValues(0, 1)
   self:_setFrameWidthHeight()
 
@@ -213,6 +203,14 @@ function PlayerHealth:_getOptionTable()
           dialogControl = "LSM30_Border",
           values = media:HashTable("border"),
           order = _incrementOrderIndex()
+        },
+        color = {
+          name = "Health Bar Color",
+          desc = "Health Bar Color",
+          type = "color",
+          get = _getOptionColor,
+          set = _setOptionColor,
+          hasAlpha = true
         }
       }
     }
@@ -234,6 +232,16 @@ function _setOption(infoTable, value)
   local key = infoTable[#infoTable]
   _curDbProfile[key] = value
   PlayerHealth:refreshConfig()
+end
+
+---@param infoTable table
+function _getOptionColor(infoTable)
+  return unpack(_getOption(infoTable))
+end
+
+---@param infoTable table
+function _setOptionColor(infoTable, ...)
+  _setOption(infoTable, {...})
 end
 
 function _incrementOrderIndex()
@@ -280,4 +288,23 @@ function PlayerHealth:_setFrameWidthHeight()
   self._HealthBarFrame.bgFrame:SetHeight(self._HealthBarFrame:GetHeight())
   self._HealthBarFrame.StatusBar:SetWidth(self._HealthBarFrame:GetWidth())
   self._HealthBarFrame.StatusBar:SetHeight(self._HealthBarFrame:GetHeight())
+end
+
+function PlayerHealth:_refreshHealthBarFrame()
+  self._HealthBarFrame:SetPoint(
+    "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
+    _curDbProfile.positionx,
+    _curDbProfile.positiony
+  )
+  self._HealthBarFrame.Text:SetFont(
+    media:Fetch("font", _curDbProfile.font),
+    _curDbProfile.fontsize, "OUTLINE"
+  )
+  _frameBackdropTable.edgeFile = media:Fetch("border", _curDbProfile.border)
+  self._HealthBarFrame:SetBackdrop(_frameBackdropTable)
+end
+
+function PlayerHealth:_refreshStatusBar()
+  self._HealthBarFrame.StatusBar:SetStatusBarTexture(media:Fetch("statusbar", _curDbProfile.texture))
+  self._HealthBarFrame.StatusBar:SetStatusBarColor(unpack(_curDbProfile.color))
 end
