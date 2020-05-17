@@ -26,14 +26,14 @@ PlayerHealth._HealthBarFrame = nil
 local _defaults = {
   profile = {
     width = 200,
-    height = 200,
-    positionx = 1,
-    positiony = 1,
+    height = 26,
+    positionx = 400,
+    positiony = 280,
     fontsize = 14,
     font = "Friz Quadrata TT",
     texture = "Blizzard",
     color = {0.0, 1.0, 0.0, 1.0},
-    border = "Blizzard Tooltip",
+    border = "None",
   }
 }
 
