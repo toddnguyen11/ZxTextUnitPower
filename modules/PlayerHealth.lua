@@ -14,13 +14,15 @@ local unpack = unpack
 -- "PRIVATE" variables
 local _getOption, _setOption, _getOptionColor, _setOptionColor
 local _curDbProfile
-local _handle_positionx_center, _handle_positiony_center, _handle_unit_health_event
+local _handlePositionXCenter, _handlePositionYCenter, _onUpdateHandler
 local _incrementOrderIndex
 local _orderIndex = 1
+local _timeSinceLastUpdate = 0
 local _prevHealth = UnitHealthMax("PLAYER")
 
 PlayerHealth._SCREEN_WIDTH = math.floor(GetScreenWidth())
 PlayerHealth._SCREEN_HEIGHT = math.floor(GetScreenHeight())
+PlayerHealth._UPDATE_INTERVAL_SECONDS = 0.15
 PlayerHealth._HealthBarFrame = nil
 
 local _defaults = {
@@ -103,7 +105,7 @@ function PlayerHealth:CreateBar()
   self._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercent * 100.0))
 
   self:_registerEvents()
-  self._HealthBarFrame:SetScript("OnUpdate", _handle_unit_health_event)
+  self._HealthBarFrame:SetScript("OnUpdate", _onUpdateHandler)
   self._HealthBarFrame:Show()
 end
 
@@ -156,7 +158,7 @@ function PlayerHealth:_getOptionTable()
           name = "Center Health Bar X",
           desc = "Center Health Bar X Position",
           type = "execute",
-          func = _handle_positionx_center,
+          func = _handlePositionXCenter,
           order = _incrementOrderIndex()
         },
         positiony = {
@@ -173,7 +175,7 @@ function PlayerHealth:_getOptionTable()
           name = "Center Health Bar Y",
           desc = "Center Health Bar Y Position",
           type = "execute",
-          func = _handle_positiony_center,
+          func = _handlePositionYCenter,
           order = _incrementOrderIndex()
         },
         fontsize = {
@@ -267,7 +269,7 @@ function _incrementOrderIndex()
   return i
 end
 
-function _handle_positionx_center()
+function _handlePositionXCenter()
   local width = _curDbProfile.width
 
   local centerXPos = math.floor(PlayerHealth._SCREEN_WIDTH / 2 - width / 2)
@@ -275,7 +277,7 @@ function _handle_positionx_center()
   PlayerHealth:refreshConfig()
 end
 
-function _handle_positiony_center()
+function _handlePositionYCenter()
   local height = _curDbProfile.height
 
   local centerYPos = math.floor(PlayerHealth._SCREEN_HEIGHT / 2 - height / 2)
@@ -283,15 +285,24 @@ function _handle_positiony_center()
   PlayerHealth:refreshConfig()
 end
 
-function _handle_unit_health_event(self, event, unit)
+---@param elapsed number
+function _onUpdateHandler(self, elapsed)
+  _timeSinceLastUpdate = _timeSinceLastUpdate + elapsed
   local curUnitHealth = UnitHealth("Player")
-  if (curUnitHealth ~= _prevHealth) then
+  if (_timeSinceLastUpdate > PlayerHealth._UPDATE_INTERVAL_SECONDS)
+    and (curUnitHealth ~= _prevHealth) then
+    PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
     _prevHealth = curUnitHealth
-    local maxUnitHealth = UnitHealthMax("Player")
-    local healthPercent = curUnitHealth / maxUnitHealth
-    PlayerHealth._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercent * 100.0))
-    PlayerHealth._HealthBarFrame.StatusBar:SetValue(healthPercent)
+    _timeSinceLastUpdate = 0
   end
+end
+
+function PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
+  curUnitHealth = curUnitHealth or UnitHealth("Player")
+  local maxUnitHealth = UnitHealthMax("Player")
+  local healthPercent = curUnitHealth / maxUnitHealth
+  PlayerHealth._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercent * 100.0))
+  PlayerHealth._HealthBarFrame.StatusBar:SetValue(healthPercent)
 end
 
 function PlayerHealth:_setFrameWidthHeight()
