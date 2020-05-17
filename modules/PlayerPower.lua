@@ -33,6 +33,7 @@ local _defaults = {
     positiony = 250,
     fontsize = 14,
     font = "Friz Quadrata TT",
+    fontcolor = {1.0, 1.0, 1.0},
     texture = "Blizzard",
     color = {0.0, 0.0, 1.0, 1.0},
     border = "None"
@@ -106,7 +107,7 @@ function PlayerPower:CreateBar()
   self._PowerBarFrame.Text:SetFont(
       media:Fetch("font", _curDbProfile.font),
       _curDbProfile.fontsize, "OUTLINE")
-  self._PowerBarFrame.Text:SetTextColor(1.0, 1.0, 1.0, 1.0)
+  self._PowerBarFrame.Text:SetTextColor(unpack(_curDbProfile.fontcolor))
   self._PowerBarFrame.Text:SetPoint("CENTER", self._PowerBarFrame.StatusBar, "CENTER", 0, 0)
   self._PowerBarFrame.Text:SetText(string.format("%.1f%%", powerPercent * 100.0))
 
@@ -203,6 +204,15 @@ function PlayerPower:_getOptionTable()
           values = media:HashTable("font"),
           order = _incrementOrderIndex()
         },
+        fontcolor = {
+          name = "Power Bar Font Color",
+          desc = "Power Bar Font Color",
+          type = "color",
+          get = _getOptionColor,
+          set = _setOptionColor,
+          hasAlpha = false,
+          order = _incrementOrderIndex()
+        },
         texture = {
           name = "Power Bar Texture",
           desc = "Power Bar Texture",
@@ -225,7 +235,8 @@ function PlayerPower:_getOptionTable()
           type = "color",
           get = _getOptionColor,
           set = _setOptionColor,
-          hasAlpha = true
+          hasAlpha = true,
+          order = _incrementOrderIndex()
         }
       }
     }
@@ -313,6 +324,7 @@ function PlayerPower:_refreshPowerBarFrame()
   )
   _frameBackdropTable.edgeFile = media:Fetch("border", _curDbProfile.border)
   self._PowerBarFrame:SetBackdrop(_frameBackdropTable)
+  self._PowerBarFrame.Text:SetTextColor(unpack(_curDbProfile.fontcolor))
 end
 
 function PlayerPower:_refreshStatusBar()

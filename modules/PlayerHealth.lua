@@ -31,6 +31,7 @@ local _defaults = {
     positiony = 280,
     fontsize = 14,
     font = "Friz Quadrata TT",
+    fontcolor = {1.0, 1.0, 1.0},
     texture = "Blizzard",
     color = {0.0, 1.0, 0.0, 1.0},
     border = "None",
@@ -97,7 +98,7 @@ function PlayerHealth:CreateBar()
   self._HealthBarFrame.Text:SetFont(
       media:Fetch("font", _curDbProfile.font),
       _curDbProfile.fontsize, "OUTLINE")
-  self._HealthBarFrame.Text:SetTextColor(1.0, 1.0, 1.0, 1.0)
+  self._HealthBarFrame.Text:SetTextColor(unpack(_curDbProfile.fontcolor))
   self._HealthBarFrame.Text:SetPoint("CENTER", self._HealthBarFrame.StatusBar, "CENTER", 0, 0)
   self._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercent * 100.0))
 
@@ -194,6 +195,15 @@ function PlayerHealth:_getOptionTable()
           values = media:HashTable("font"),
           order = _incrementOrderIndex()
         },
+        fontcolor = {
+          name = "Health Bar Font Color",
+          desc = "Health Bar Font Color",
+          type = "color",
+          get = _getOptionColor,
+          set = _setOptionColor,
+          hasAlpha = false,
+          order = _incrementOrderIndex()
+        },
         texture = {
           name = "Health Bar Texture",
           desc = "Health Bar Texture",
@@ -216,7 +226,8 @@ function PlayerHealth:_getOptionTable()
           type = "color",
           get = _getOptionColor,
           set = _setOptionColor,
-          hasAlpha = true
+          hasAlpha = true,
+          order = _incrementOrderIndex()
         }
       }
     }
@@ -304,6 +315,7 @@ function PlayerHealth:_refreshHealthBarFrame()
   )
   _frameBackdropTable.edgeFile = media:Fetch("border", _curDbProfile.border)
   self._HealthBarFrame:SetBackdrop(_frameBackdropTable)
+  self._HealthBarFrame.Text:SetTextColor(unpack(_curDbProfile.fontcolor))
 end
 
 function PlayerHealth:_refreshStatusBar()
