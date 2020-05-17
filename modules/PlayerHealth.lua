@@ -15,12 +15,12 @@ local unpack = unpack
 local _getOption, _setOption, _getOptionColor, _setOptionColor
 local _curDbProfile
 local _handle_positionx_center, _handle_positiony_center, _handle_unit_health_event
-local _get_health_percent
 local _incrementOrderIndex
 local _orderIndex = 1
+local _prevHealth = UnitHealthMax("PLAYER")
+
 PlayerHealth._SCREEN_WIDTH = math.floor(GetScreenWidth())
 PlayerHealth._SCREEN_HEIGHT = math.floor(GetScreenHeight())
-
 PlayerHealth._HealthBarFrame = nil
 
 local _defaults = {
@@ -32,7 +32,8 @@ local _defaults = {
     fontsize = 14,
     font = "Friz Quadrata TT",
     texture = "Blizzard",
-    color = {0.0, 1.0, 0.0, 1.0}
+    color = {0.0, 1.0, 0.0, 1.0},
+    border = "Blizzard Tooltip",
   }
 }
 
@@ -64,6 +65,10 @@ function PlayerHealth:refreshConfig()
 end
 
 function PlayerHealth:CreateBar()
+  local currentHealth = UnitHealth("Player")
+  local maxHealth = UnitHealthMax("Player")
+  local healthPercentage = maxHealth / currentHealth
+
   self._HealthBarFrame = CreateFrame("Frame", nil, UIParent)
   self._HealthBarFrame:SetBackdrop(_frameBackdropTable)
   self._HealthBarFrame:SetBackdropColor(1, 0, 0, 1)
@@ -85,6 +90,7 @@ function PlayerHealth:CreateBar()
   self._HealthBarFrame.StatusBar:GetStatusBarTexture():SetVertTile(false)
   self._HealthBarFrame.StatusBar:SetStatusBarColor(unpack(_curDbProfile.color))
   self._HealthBarFrame.StatusBar:SetMinMaxValues(0, 1)
+  self._HealthBarFrame.StatusBar:SetValue(healthPercentage)
   self:_setFrameWidthHeight()
 
   self._HealthBarFrame.Text = self._HealthBarFrame.StatusBar:CreateFontString(nil, "OVERLAY")
@@ -93,10 +99,10 @@ function PlayerHealth:CreateBar()
       _curDbProfile.fontsize, "OUTLINE")
   self._HealthBarFrame.Text:SetTextColor(1.0, 1.0, 1.0, 1.0)
   self._HealthBarFrame.Text:SetPoint("CENTER", self._HealthBarFrame.StatusBar, "CENTER", 0, 0)
-  self._HealthBarFrame.Text:SetText(string.format("%.1f%%", _get_health_percent() * 100.0))
+  self._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercentage * 100.0))
 
-  self._HealthBarFrame:RegisterEvent("UNIT_HEALTH")
-  self._HealthBarFrame:SetScript("OnEvent", _handle_unit_health_event)
+  self:_registerEvents()
+  self._HealthBarFrame:SetScript("OnUpdate", _handle_unit_health_event)
   self._HealthBarFrame:Show()
 end
 
@@ -267,18 +273,14 @@ function _handle_positiony_center()
 end
 
 function _handle_unit_health_event(self, event, unit)
-  if (unit == "player") then
-    local healthPercent = _get_health_percent()
+  local curUnitHealth = UnitHealth("Player")
+  if (curUnitHealth ~= _prevHealth) then
+    _prevHealth = curUnitHealth
+    local maxUnitHealth = UnitHealthMax("Player")
+    local healthPercent = curUnitHealth / maxUnitHealth
     PlayerHealth._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercent * 100.0))
     PlayerHealth._HealthBarFrame.StatusBar:SetValue(healthPercent)
   end
-end
-
----@return number
-function _get_health_percent()
-  local curUnitHealth = UnitHealth("Player")
-  local maxUnitHealth = UnitHealthMax("Player")
-  return curUnitHealth / maxUnitHealth
 end
 
 function PlayerHealth:_setFrameWidthHeight()
@@ -307,4 +309,8 @@ end
 function PlayerHealth:_refreshStatusBar()
   self._HealthBarFrame.StatusBar:SetStatusBarTexture(media:Fetch("statusbar", _curDbProfile.texture))
   self._HealthBarFrame.StatusBar:SetStatusBarColor(unpack(_curDbProfile.color))
+end
+
+function PlayerHealth:_registerEvents()
+  self._HealthBarFrame:RegisterEvent("UNIT_HEALTH")
 end
