@@ -44,7 +44,7 @@ local _frameBackdropTable = {
 function PlayerHealth:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   _curDbProfile = self.db.profile
-  self:CreateSimpleGroup()
+  self:CreateBar()
 
   self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
   ZxSimpleUI:registerModuleOptions(_MODULE_NAME, self:_getOptionTable(), _DECORATIVE_NAME)
@@ -73,7 +73,7 @@ function PlayerHealth:refreshConfig()
   end
 end
 
-function PlayerHealth:CreateSimpleGroup()
+function PlayerHealth:CreateBar()
   self._HealthBarFrame = CreateFrame("Frame", nil, UIParent)
   self._HealthBarFrame:SetBackdrop(_frameBackdropTable)
   self._HealthBarFrame:SetBackdropColor(1, 0, 0, 1)
@@ -82,6 +82,10 @@ function PlayerHealth:CreateSimpleGroup()
     _curDbProfile.positionx,
     _curDbProfile.positiony
   )
+
+  self._HealthBarFrame.bgFrame = self._HealthBarFrame:CreateTexture(nil, "BACKGROUND")
+  self._HealthBarFrame.bgFrame:SetTexture(0, 0, 0, 0.8)
+  self._HealthBarFrame.bgFrame:SetAllPoints()
 
   self._HealthBarFrame.StatusBar = CreateFrame("StatusBar", nil, self._HealthBarFrame)
   self._HealthBarFrame.StatusBar:ClearAllPoints()
@@ -272,6 +276,8 @@ end
 function PlayerHealth:_setFrameWidthHeight()
   self._HealthBarFrame:SetWidth(_curDbProfile.width)
   self._HealthBarFrame:SetHeight(_curDbProfile.height)
+  self._HealthBarFrame.bgFrame:SetWidth(self._HealthBarFrame:GetWidth())
+  self._HealthBarFrame.bgFrame:SetHeight(self._HealthBarFrame:GetHeight())
   self._HealthBarFrame.StatusBar:SetWidth(self._HealthBarFrame:GetWidth())
   self._HealthBarFrame.StatusBar:SetHeight(self._HealthBarFrame:GetHeight())
 end
