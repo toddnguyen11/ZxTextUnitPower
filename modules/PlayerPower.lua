@@ -298,12 +298,13 @@ end
 ---@param elapsed number
 function _onUpdateHandler(self, elapsed)
   _timeSinceLastUpdate = _timeSinceLastUpdate + elapsed
-  local curUnitPower = UnitPower("PLAYER")
-  if (_timeSinceLastUpdate > PlayerPower._UPDATE_INTERVAL_SECONDS)
-    and (curUnitPower ~= _prevPowerValue) then
-    PlayerPower:_setPowerValue(curUnitPower)
-    _prevPowerValue = curUnitPower
-    _timeSinceLastUpdate = 0
+  if (_timeSinceLastUpdate > PlayerPower._UPDATE_INTERVAL_SECONDS) then
+    local curUnitPower = UnitPower("PLAYER")
+    if (curUnitPower ~= _prevPowerValue) then
+      PlayerPower:_setPowerValue(curUnitPower)
+      _prevPowerValue = curUnitPower
+      _timeSinceLastUpdate = 0
+    end
   end
 end
 

@@ -55,16 +55,19 @@ function ZxSimpleUI:isModuleEnabled(module)
   return self.db.profile.modules[module]
 end
 
+---Refresh the configuration for this AddOn as well as any modules
+---that are added to this AddOn
 function ZxSimpleUI:refreshConfig()
-  for k,v in ZxSimpleUI:IterateModules() do
-    if ZxSimpleUI:isModuleEnabled(k) and not v:IsEnabled() then
+  for k, curModule in ZxSimpleUI:IterateModules() do
+    if ZxSimpleUI:isModuleEnabled(k) and not curModule:IsEnabled() then
       ZxSimpleUI:EnableModule(k)
-    elseif not ZxSimpleUI:isModuleEnabled(k) and v:IsEnabled() then
+    elseif not ZxSimpleUI:isModuleEnabled(k) and curModule:IsEnabled() then
       ZxSimpleUI:DisableModule(k)
     end
 
-    if type(v.refreshConfig) == "function" then
-      v:refreshConfig()
+    --- Refresh every module connected to this AddOn
+    if type(curModule.refreshConfig) == "function" then
+      curModule:refreshConfig()
     end
   end
 end

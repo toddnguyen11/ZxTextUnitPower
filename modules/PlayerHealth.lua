@@ -288,12 +288,13 @@ end
 ---@param elapsed number
 function _onUpdateHandler(self, elapsed)
   _timeSinceLastUpdate = _timeSinceLastUpdate + elapsed
-  local curUnitHealth = UnitHealth("Player")
-  if (_timeSinceLastUpdate > PlayerHealth._UPDATE_INTERVAL_SECONDS)
-    and (curUnitHealth ~= _prevHealth) then
-    PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
-    _prevHealth = curUnitHealth
-    _timeSinceLastUpdate = 0
+  if (_timeSinceLastUpdate > PlayerHealth._UPDATE_INTERVAL_SECONDS) then
+    local curUnitHealth = UnitHealth("Player")
+    if (curUnitHealth ~= _prevHealth) then
+      PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
+      _prevHealth = curUnitHealth
+      _timeSinceLastUpdate = 0
+    end
   end
 end
 
