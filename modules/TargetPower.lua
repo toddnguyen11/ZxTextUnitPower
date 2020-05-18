@@ -81,7 +81,9 @@ function TargetPower:createBar()
   local targetUnitPower = UnitPower("Target")
   local targetUnitMaxPower = UnitPowerMax("Target")
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitPower, targetUnitMaxPower)
-  self._mainFrame = self.bars:createBar(percentage)
+  local emptyName = ""
+
+  self._mainFrame = self.bars:createBar(percentage, emptyName)
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
@@ -151,6 +153,7 @@ function TargetPower:_handleUnitPowerEvent(curUnitPower)
 end
 
 function TargetPower:_onUpdateHandler(argsTable, elapsed)
+  if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
     local curUnitPower = UnitPower("Target")

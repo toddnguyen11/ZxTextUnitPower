@@ -19,6 +19,8 @@ end
 function CoreBarTemplate:__init__(curDbProfile)
   self._orderIndex = 1
   self._curDbProfile = curDbProfile
+  self._mainFrame = nil
+
   self.defaults = {
     profile = {
       width = 200,
@@ -39,13 +41,12 @@ function CoreBarTemplate:__init__(curDbProfile)
     insets = { left = 4, right = 4, top = 4, bottom = 4 }
   }
   self.options = {}
-  self._mainFrame = nil
 end
 
----@param percentValue number
+---@param percentValue number 0 to 1
+---@param nameTextValue string
 ---@return table
----Return a reference to the _mainFrame
-function CoreBarTemplate:createBar(percentValue)
+function CoreBarTemplate:createBar(percentValue, nameTextValue)
   self._mainFrame = CreateFrame("Frame", nil, UIParent)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
   self._mainFrame:SetBackdropColor(1, 0, 0, 1)
@@ -70,13 +71,21 @@ function CoreBarTemplate:createBar(percentValue)
   self._mainFrame.statusBar:SetValue(percentValue)
   self:_setFrameWidthHeight()
 
-  self._mainFrame.text = self._mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
-  self._mainFrame.text:SetFont(
+  self._mainFrame.nameText = self._mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
+  self._mainFrame.nameText:SetFont(
       media:Fetch("font", self._curDbProfile.font),
       self._curDbProfile.fontsize, "OUTLINE")
-  self._mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
-  self._mainFrame.text:SetPoint("CENTER", self._mainFrame.statusBar, "CENTER", 0, 0)
-  self._mainFrame.text:SetText(string.format("%.1f%%", percentValue * 100.0))
+  self._mainFrame.nameText:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  -- self._mainFrame.nameText:SetPoint("LEFT", self._mainFrame.statusBar, "LEFT", 5, 0)
+  self._mainFrame.nameText:SetText(string.format("%.10s", nameTextValue))
+
+  self._mainFrame.percentText = self._mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
+  self._mainFrame.percentText:SetFont(
+      media:Fetch("font", self._curDbProfile.font),
+      self._curDbProfile.fontsize, "OUTLINE")
+  self._mainFrame.percentText:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame.percentText:SetPoint("CENTER", self._mainFrame.statusBar, "CENTER", 0, 0)
+  self._mainFrame.percentText:SetText(string.format("%.1f%%", percentValue * 100.0))
 
   self._mainFrame:Show()
   return self._mainFrame
@@ -282,13 +291,13 @@ function CoreBarTemplate:_refreshBarFrame()
     self._curDbProfile.positionx,
     self._curDbProfile.positiony
   )
-  self._mainFrame.text:SetFont(
+  self._mainFrame.percentText:SetFont(
     media:Fetch("font", self._curDbProfile.font),
     self._curDbProfile.fontsize, "OUTLINE"
   )
   self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
-  self._mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame.percentText:SetTextColor(unpack(self._curDbProfile.fontcolor))
 end
 
 function CoreBarTemplate:_refreshPowerBarFrame()
@@ -297,13 +306,13 @@ function CoreBarTemplate:_refreshPowerBarFrame()
     self._curDbProfile.positionx,
     self._curDbProfile.positiony
   )
-  self._mainFrame.text:SetFont(
+  self._mainFrame.percentText:SetFont(
     media:Fetch("font", self._curDbProfile.font),
     self._curDbProfile.fontsize, "OUTLINE"
   )
   self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
-  self._mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame.percentText:SetTextColor(unpack(self._curDbProfile.fontcolor))
 end
 
 function CoreBarTemplate:_refreshStatusBar()
@@ -313,6 +322,6 @@ end
 
 ---@param percentValue number from 0.0 to 1.0
 function CoreBarTemplate:_setStatusBarValue(percentValue)
-  self._mainFrame.text:SetText(string.format("%.1f%%", percentValue * 100.0))
+  self._mainFrame.percentText:SetText(string.format("%.1f%%", percentValue * 100.0))
   self._mainFrame.statusBar:SetValue(percentValue)
 end

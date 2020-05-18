@@ -12,6 +12,7 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
+local UnitName = UnitName
 local unpack = unpack
 
 TargetHealth.MODULE_NAME = _MODULE_NAME
@@ -63,7 +64,9 @@ function TargetHealth:createBar()
   local targetUnitHealth = UnitHealth("Target")
   local targetUnitMaxHealth = UnitHealthMax("Target")
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitHealth, targetUnitMaxHealth)
-  self._mainFrame = self.bars:createBar(percentage)
+  local targetName, blah = UnitName("TARGET") or ""
+
+  self._mainFrame = self.bars:createBar(percentage, targetName)
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
@@ -101,6 +104,7 @@ end
 function TargetHealth:_handlePlayerTargetChanged()
   local targetHealth = UnitHealth("Target")
   if targetHealth > 0 then
+    self._mainFrame.nameText:SetText(string.format("%.10s", UnitName("TARGET")))
     self._mainFrame:Show()
   else
     self._mainFrame:Hide()
@@ -108,6 +112,7 @@ function TargetHealth:_handlePlayerTargetChanged()
 end
 
 function TargetHealth:_onUpdateHandler(argsTable, elapsed)
+  if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
     local curUnitHealth = UnitHealth("Target")

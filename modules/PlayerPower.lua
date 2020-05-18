@@ -84,9 +84,10 @@ end
 function PlayerPower:createBar()
   local curUnitPower = UnitPower("PLAYER")
   local maxUnitPower = UnitPowerMax("PLAYER")
-  local powerPercent = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
+  local percentage = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
+  local emptyName = ""
 
-  self._mainFrame = self.bars:createBar(powerPercent)
+  self._mainFrame = self.bars:createBar(percentage, emptyName)
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)

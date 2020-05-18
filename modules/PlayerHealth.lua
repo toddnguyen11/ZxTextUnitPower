@@ -9,6 +9,7 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
+local UnitName = UnitName
 local unpack = unpack
 
 PlayerHealth.MODULE_NAME = _MODULE_NAME
@@ -63,9 +64,10 @@ end
 function PlayerHealth:createBar()
   local curUnitHealth = UnitHealth("Player")
   local maxUnitHealth = UnitHealthMax("Player")
-  local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
+  local percentage = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
+  local unitName = UnitName("PLAYER") or ""
 
-  self._mainFrame = self.bars:createBar(healthPercent)
+  self._mainFrame = self.bars:createBar(percentage, unitName)
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
