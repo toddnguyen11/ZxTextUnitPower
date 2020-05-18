@@ -56,13 +56,13 @@ end
 
 function TargetHealth:__init__()
   self._timeSinceLastUpdate = 0
-  self._prevTargetHealth = UnitHealthMax("Target")
+  self._prevTargetHealth = UnitHealthMax("TARGET")
   self._mainFrame = nil
 end
 
 function TargetHealth:createBar()
-  local targetUnitHealth = UnitHealth("Target")
-  local targetUnitMaxHealth = UnitHealthMax("Target")
+  local targetUnitHealth = UnitHealth("TARGET")
+  local targetUnitMaxHealth = UnitHealthMax("TARGET")
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitHealth, targetUnitMaxHealth)
 
   self._mainFrame = self.bars:createBar(percentage)
@@ -93,16 +93,17 @@ function TargetHealth:_registerEvents()
 end
 
 function TargetHealth:_onEventHandler(argsTable, event, unit)
-  if event == "UNIT_HEALTH" then
-    self:_handleUnitHealthEvent()
-  elseif event == "PLAYER_TARGET_CHANGED" then
+  if event == "PLAYER_TARGET_CHANGED" then
     self:_handlePlayerTargetChanged()
+  elseif event == "UNIT_HEALTH" and string.upper(unit) == "TARGET" then
+    self:_handleUnitHealthEvent()
   end
 end
 
 function TargetHealth:_handlePlayerTargetChanged()
-  local targetHealth = UnitHealth("Target")
-  if targetHealth > 0 then
+  local targetName = UnitName("TARGET")
+  if targetName ~= nil and targetName ~= "" then
+    self:_setHealthValue()
     self._mainFrame:Show()
   else
     self._mainFrame:Hide()
@@ -113,7 +114,7 @@ function TargetHealth:_onUpdateHandler(argsTable, elapsed)
   if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
-    local curUnitHealth = UnitHealth("Target")
+    local curUnitHealth = UnitHealth("TARGET")
     if (curUnitHealth ~= self._prevTargetHealth) then
       self:_handleUnitHealthEvent(curUnitHealth)
       self._prevTargetHealth = curUnitHealth
@@ -123,13 +124,12 @@ function TargetHealth:_onUpdateHandler(argsTable, elapsed)
 end
 
 function TargetHealth:_handleUnitHealthEvent(curUnitHealth)
-  curUnitHealth = curUnitHealth or UnitHealth("Target")
-  if (curUnitHealth == 0) then
-    self._mainFrame:Hide()
+  curUnitHealth = curUnitHealth or UnitHealth("TARGET")
+  if (curUnitHealth > 0) then
+    self:_setHealthValue(curUnitHealth)
   else
-    local maxUnitHealth = UnitHealthMax("Target")
-    local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
-    self.bars:_setStatusBarValue(healthPercent)
+    self._mainFrame.mainText:SetText("Dead")
+    self._mainFrame.statusBar:SetValue(0)
   end
 end
 
@@ -148,4 +148,13 @@ function TargetHealth:_addShowOption(optionsTable)
     end
   }
   return optionsTable
+end
+
+function TargetHealth:_setHealthValue(curUnitHealth)
+  curUnitHealth = curUnitHealth or UnitHealth("TARGET")
+  if curUnitHealth > 0 then
+    local maxUnitHealth = UnitHealthMax("TARGET")
+    local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
+    self.bars:_setStatusBarValue(healthPercent)
+  end
 end

@@ -1,5 +1,6 @@
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
+local Utils = ZxSimpleUI.Utils
 
 local _MODULE_NAME = "PlayerName"
 local _DECORATIVE_NAME = "Player Name"
@@ -9,7 +10,6 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitName = UIParent, CreateFrame, UnitName
-local UnitName = UnitName
 local unpack = unpack
 
 PlayerName.MODULE_NAME = _MODULE_NAME
@@ -19,10 +19,10 @@ PlayerName._UPDATE_INTERVAL_SECONDS = 0.15
 local _defaults = {
   profile = {
     width = 200,
-    height = 26,
+    height = 20,
     positionx = 400,
-    positiony = 260,
-    fontsize = 14,
+    positiony = 310,
+    fontsize = 12,
     font = "Friz Quadrata TT",
     fontcolor = {1.0, 1.0, 1.0},
     texture = "Blizzard",
@@ -44,15 +44,31 @@ function PlayerName:OnInitialize()
   self:__init__()
 end
 
+function PlayerName:OnEnable()
+  self:createBar()
+  self:refreshConfig()
+end
+
 function PlayerName:__init__()
   self._timeSinceLastUpdate = 0
   self._prevName = UnitName("PLAYER")
   self._mainFrame = nil
 end
 
+function PlayerName:createBar()
+  local percentage = 1.0
+  self._mainFrame = self.bars:createBar(percentage)
+  self.bars:_setTextOnly(self:_getFormattedName())
+
+  self._mainFrame:Show()
+end
+
 function PlayerName:refreshConfig()
   if self:IsEnabled() then
-    -- self.bars:refreshConfig()
+    self.bars:refreshConfig()
+    self._mainFrame:Show()
+  else
+    self._mainFrame:Hide()
   end
 end
 
@@ -68,8 +84,17 @@ function PlayerName:_getAppendedEnableOptionTable()
       name = "Enable",
       desc = "Enable / Disable Module `" .. _DECORATIVE_NAME .. "`",
       get = function(info) return ZxSimpleUI:getModuleEnabledState(_MODULE_NAME) end,
-      set = function(info, val) ZxSimpleUI:setModuleEnabledState(_MODULE_NAME, val) end,
+      set = function(info, val)
+        ZxSimpleUI:setModuleEnabledState(_MODULE_NAME, val)
+        self:refreshConfig()
+      end,
       order = 1
   }
   return options
+end
+
+---@return string formattedName
+function PlayerName:_getFormattedName()
+  local name = UnitName("PLAYER")
+  return Utils:getInitials(name)
 end

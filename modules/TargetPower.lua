@@ -12,6 +12,7 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower, UnitPowerMax
+local UnitName = UnitName
 local UnitHealth, UnitPowerType = UnitHealth, UnitPowerType
 local unpack = unpack
 
@@ -73,13 +74,13 @@ end
 
 function TargetPower:__init__()
   self._timeSinceLastUpdate = 0
-  self._prevTargetPower = UnitPowerMax("Target")
+  self._prevTargetPower = UnitPowerMax("TARGET")
   self._mainFrame = nil
 end
 
 function TargetPower:createBar()
-  local targetUnitPower = UnitPower("Target")
-  local targetUnitMaxPower = UnitPowerMax("Target")
+  local targetUnitPower = UnitPower("TARGET")
+  local targetUnitMaxPower = UnitPowerMax("TARGET")
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitPower, targetUnitMaxPower)
 
   self._mainFrame = self.bars:createBar(percentage)
@@ -125,8 +126,8 @@ function TargetPower:_onEventHandler(argsTable, event, unit)
 end
 
 function TargetPower:_handlePlayerTargetChanged()
-  local currentHealth = UnitHealth("Target")
-  if currentHealth > 0 then
+  local targetName = UnitName("TARGET")
+  if targetName ~= nil and targetName ~= "" then
     self:_setColorThenShow()
   else
     self._mainFrame:Hide()
@@ -140,12 +141,10 @@ function TargetPower:_handlePowerChanged()
 end
 
 function TargetPower:_handleUnitPowerEvent(curUnitPower)
-  local currentHealth = UnitHealth("Target")
-  if currentHealth <= 0 then
-    self._mainFrame:Hide()
-  else
-    curUnitPower = curUnitPower or UnitPower("Target")
-    local maxUnitPower = UnitPowerMax("Target")
+  local currentHealth = UnitHealth("TARGET")
+  if currentHealth > 0 then
+    curUnitPower = curUnitPower or UnitPower("TARGET")
+    local maxUnitPower = UnitPowerMax("TARGET")
     local powerPercent = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
     self.bars:_setStatusBarValue(powerPercent)
   end
@@ -155,7 +154,7 @@ function TargetPower:_onUpdateHandler(argsTable, elapsed)
   if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
-    local curUnitPower = UnitPower("Target")
+    local curUnitPower = UnitPower("TARGET")
     if (curUnitPower ~= self._prevTargetPower) then
       self:_handleUnitPowerEvent(curUnitPower)
       self._prevTargetPower = curUnitPower
@@ -182,7 +181,7 @@ function TargetPower:_addShowOption(optionsTable)
 end
 
 function TargetPower:_setUnitPowerType()
-  self._targetPowerType, self._targetPowerTypeString = UnitPowerType("Target")
+  self._targetPowerType, self._targetPowerTypeString = UnitPowerType("TARGET")
 end
 
 function TargetPower:_setColorThenShow()

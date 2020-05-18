@@ -17,7 +17,7 @@ local _defaults = {
   profile = {
     modules = {
       ["*"] = {enabled = true},
-      PlayerName = {enabled = false}
+      -- PlayerName = {enabled = false}
     },
   }
 }
