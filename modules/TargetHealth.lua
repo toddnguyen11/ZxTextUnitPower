@@ -55,14 +55,14 @@ end
 
 function TargetHealth:__init__()
   self._timeSinceLastUpdate = 0
-  self._targetPrevHealth = UnitHealthMax("Target")
+  self._prevTargetHealth = UnitHealthMax("Target")
   self._mainFrame = nil
 end
 
 function TargetHealth:createBar()
   local targetUnitHealth = UnitHealth("Target")
   local targetUnitMaxHealth = UnitHealthMax("Target")
-  local percentage = targetUnitHealth / targetUnitMaxHealth
+  local percentage = ZxSimpleUI:calcPercentSafely(targetUnitHealth, targetUnitMaxHealth)
   self._mainFrame = self.bars:createBar(percentage)
 
   self:_registerEvents()
@@ -111,9 +111,9 @@ function TargetHealth:_onUpdateHandler(argsTable, elapsed)
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
     local curUnitHealth = UnitHealth("Target")
-    if (curUnitHealth ~= self._prevHealth) then
+    if (curUnitHealth ~= self._prevTargetHealth) then
       self:_handleUnitHealthEvent(curUnitHealth)
-      self._prevHealth = curUnitHealth
+      self._prevTargetHealth = curUnitHealth
       self._timeSinceLastUpdate = 0
     end
   end
@@ -125,9 +125,8 @@ function TargetHealth:_handleUnitHealthEvent(curUnitHealth)
     self._mainFrame:Hide()
   else
     local maxUnitHealth = UnitHealthMax("Target")
-    local healthPercent = curUnitHealth / maxUnitHealth
-    self._mainFrame.text:SetText(string.format("%.1f%%", healthPercent * 100.0))
-    self._mainFrame.statusBar:SetValue(healthPercent)
+    local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
+    self.bars:_setStatusBarValue(healthPercent)
   end
 end
 
@@ -141,6 +140,7 @@ function TargetHealth:_addShowOption(optionsTable)
         self._mainFrame:Hide()
       else
         self._mainFrame:Show()
+        self.bars:_setStatusBarValue(0.8)
       end
     end
   }

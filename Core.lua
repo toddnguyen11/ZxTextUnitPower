@@ -83,3 +83,11 @@ function ZxSimpleUI:registerModuleOptions(name, optTable, displayName)
     self.ADDON_NAME, displayName or name, self.DECORATIVE_NAME, name
   )
 end
+
+---@param currentValue number
+---@param maxValue number
+---@return number
+function ZxSimpleUI:calcPercentSafely(currentValue, maxValue)
+  if (maxValue == 0.0) then return 0.0 end
+  return currentValue / maxValue
+end

@@ -63,7 +63,7 @@ end
 function PlayerHealth:createBar()
   local curUnitHealth = UnitHealth("Player")
   local maxUnitHealth = UnitHealthMax("Player")
-  local healthPercent = curUnitHealth / maxUnitHealth
+  local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
 
   self._mainFrame = self.bars:createBar(healthPercent)
 
@@ -95,9 +95,8 @@ end
 function PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
   curUnitHealth = curUnitHealth or UnitHealth("Player")
   local maxUnitHealth = UnitHealthMax("Player")
-  local healthPercent = curUnitHealth / maxUnitHealth
-  self._mainFrame.text:SetText(string.format("%.1f%%", healthPercent * 100.0))
-  self._mainFrame.statusBar:SetValue(healthPercent)
+  local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
+  self.bars:_setStatusBarValue(healthPercent)
 end
 
 function PlayerHealth:_registerEvents()

@@ -84,7 +84,7 @@ end
 function PlayerPower:createBar()
   local curUnitPower = UnitPower("PLAYER")
   local maxUnitPower = UnitPowerMax("PLAYER")
-  local powerPercent = curUnitPower / maxUnitPower
+  local powerPercent = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
 
   self._mainFrame = self.bars:createBar(powerPercent)
 
@@ -131,9 +131,8 @@ end
 function PlayerPower:_setPowerValue(curUnitPower)
   curUnitPower = curUnitPower or UnitPower("PLAYER")
   local maxUnitPower = UnitPowerMax("PLAYER")
-  local powerPercent = curUnitPower / maxUnitPower
-  self._mainFrame.text:SetText(string.format("%.1f%%", powerPercent * 100.0))
-  self._mainFrame.statusBar:SetValue(powerPercent)
+  local powerPercent = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
+  self.bars:_setStatusBarValue(powerPercent)
 end
 
 function PlayerPower:_handlePowerChanged()

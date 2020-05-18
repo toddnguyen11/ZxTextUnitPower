@@ -39,47 +39,47 @@ function CoreBarTemplate:__init__(curDbProfile)
     insets = { left = 4, right = 4, top = 4, bottom = 4 }
   }
   self.options = {}
-  self.mainFrame = nil
+  self._mainFrame = nil
 end
 
 ---@param percentValue number
 ---@return table
----Return a reference to the mainFrame
+---Return a reference to the _mainFrame
 function CoreBarTemplate:createBar(percentValue)
-  self.mainFrame = CreateFrame("Frame", nil, UIParent)
-  self.mainFrame:SetBackdrop(self.frameBackdropTable)
-  self.mainFrame:SetBackdropColor(1, 0, 0, 1)
-  self.mainFrame:SetPoint(
+  self._mainFrame = CreateFrame("Frame", nil, UIParent)
+  self._mainFrame:SetBackdrop(self.frameBackdropTable)
+  self._mainFrame:SetBackdropColor(1, 0, 0, 1)
+  self._mainFrame:SetPoint(
     "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
     self._curDbProfile.positionx,
     self._curDbProfile.positiony
   )
 
-  self.mainFrame.bgFrame = self.mainFrame:CreateTexture(nil, "BACKGROUND")
-  self.mainFrame.bgFrame:SetTexture(0, 0, 0, 0.8)
-  self.mainFrame.bgFrame:SetAllPoints()
+  self._mainFrame.bgFrame = self._mainFrame:CreateTexture(nil, "BACKGROUND")
+  self._mainFrame.bgFrame:SetTexture(0, 0, 0, 0.8)
+  self._mainFrame.bgFrame:SetAllPoints()
 
-  self.mainFrame.statusBar = CreateFrame("StatusBar", nil, self.mainFrame)
-  self.mainFrame.statusBar:ClearAllPoints()
-  self.mainFrame.statusBar:SetPoint("CENTER", self.mainFrame, "CENTER")
-  self.mainFrame.statusBar:SetStatusBarTexture(media:Fetch("statusbar", self._curDbProfile.texture))
-  self.mainFrame.statusBar:GetStatusBarTexture():SetHorizTile(false)
-  self.mainFrame.statusBar:GetStatusBarTexture():SetVertTile(false)
-  self.mainFrame.statusBar:SetStatusBarColor(unpack(self._curDbProfile.color))
-  self.mainFrame.statusBar:SetMinMaxValues(0, 1)
-  self.mainFrame.statusBar:SetValue(percentValue)
+  self._mainFrame.statusBar = CreateFrame("StatusBar", nil, self._mainFrame)
+  self._mainFrame.statusBar:ClearAllPoints()
+  self._mainFrame.statusBar:SetPoint("CENTER", self._mainFrame, "CENTER")
+  self._mainFrame.statusBar:SetStatusBarTexture(media:Fetch("statusbar", self._curDbProfile.texture))
+  self._mainFrame.statusBar:GetStatusBarTexture():SetHorizTile(false)
+  self._mainFrame.statusBar:GetStatusBarTexture():SetVertTile(false)
+  self._mainFrame.statusBar:SetStatusBarColor(unpack(self._curDbProfile.color))
+  self._mainFrame.statusBar:SetMinMaxValues(0, 1)
+  self._mainFrame.statusBar:SetValue(percentValue)
   self:_setFrameWidthHeight()
 
-  self.mainFrame.text = self.mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
-  self.mainFrame.text:SetFont(
+  self._mainFrame.text = self._mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
+  self._mainFrame.text:SetFont(
       media:Fetch("font", self._curDbProfile.font),
       self._curDbProfile.fontsize, "OUTLINE")
-  self.mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
-  self.mainFrame.text:SetPoint("CENTER", self.mainFrame.statusBar, "CENTER", 0, 0)
-  self.mainFrame.text:SetText(string.format("%.1f%%", percentValue * 100.0))
+  self._mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame.text:SetPoint("CENTER", self._mainFrame.statusBar, "CENTER", 0, 0)
+  self._mainFrame.text:SetText(string.format("%.1f%%", percentValue * 100.0))
 
-  self.mainFrame:Show()
-  return self.mainFrame
+  self._mainFrame:Show()
+  return self._mainFrame
 end
 
 ---@return table
@@ -268,45 +268,51 @@ function CoreBarTemplate:handlePositionYCenter()
 end
 
 function CoreBarTemplate:_setFrameWidthHeight()
-  self.mainFrame:SetWidth(self._curDbProfile.width)
-  self.mainFrame:SetHeight(self._curDbProfile.height)
-  self.mainFrame.bgFrame:SetWidth(self.mainFrame:GetWidth())
-  self.mainFrame.bgFrame:SetHeight(self.mainFrame:GetHeight())
-  self.mainFrame.statusBar:SetWidth(self.mainFrame:GetWidth())
-  self.mainFrame.statusBar:SetHeight(self.mainFrame:GetHeight())
+  self._mainFrame:SetWidth(self._curDbProfile.width)
+  self._mainFrame:SetHeight(self._curDbProfile.height)
+  self._mainFrame.bgFrame:SetWidth(self._mainFrame:GetWidth())
+  self._mainFrame.bgFrame:SetHeight(self._mainFrame:GetHeight())
+  self._mainFrame.statusBar:SetWidth(self._mainFrame:GetWidth())
+  self._mainFrame.statusBar:SetHeight(self._mainFrame:GetHeight())
 end
 
 function CoreBarTemplate:_refreshBarFrame()
-  self.mainFrame:SetPoint(
+  self._mainFrame:SetPoint(
     "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
     self._curDbProfile.positionx,
     self._curDbProfile.positiony
   )
-  self.mainFrame.text:SetFont(
+  self._mainFrame.text:SetFont(
     media:Fetch("font", self._curDbProfile.font),
     self._curDbProfile.fontsize, "OUTLINE"
   )
   self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
-  self.mainFrame:SetBackdrop(self.frameBackdropTable)
-  self.mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame:SetBackdrop(self.frameBackdropTable)
+  self._mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
 end
 
 function CoreBarTemplate:_refreshPowerBarFrame()
-  self.mainFrame:SetPoint(
+  self._mainFrame:SetPoint(
     "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
     self._curDbProfile.positionx,
     self._curDbProfile.positiony
   )
-  self.mainFrame.text:SetFont(
+  self._mainFrame.text:SetFont(
     media:Fetch("font", self._curDbProfile.font),
     self._curDbProfile.fontsize, "OUTLINE"
   )
   self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
-  self.mainFrame:SetBackdrop(self.frameBackdropTable)
-  self.mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame:SetBackdrop(self.frameBackdropTable)
+  self._mainFrame.text:SetTextColor(unpack(self._curDbProfile.fontcolor))
 end
 
 function CoreBarTemplate:_refreshStatusBar()
-  self.mainFrame.statusBar:SetStatusBarTexture(media:Fetch("statusbar", self._curDbProfile.texture))
-  self.mainFrame.statusBar:SetStatusBarColor(unpack(self._curDbProfile.color))
+  self._mainFrame.statusBar:SetStatusBarTexture(media:Fetch("statusbar", self._curDbProfile.texture))
+  self._mainFrame.statusBar:SetStatusBarColor(unpack(self._curDbProfile.color))
+end
+
+---@param percentValue number from 0.0 to 1.0
+function CoreBarTemplate:_setStatusBarValue(percentValue)
+  self._mainFrame.text:SetText(string.format("%.1f%%", percentValue * 100.0))
+  self._mainFrame.statusBar:SetValue(percentValue)
 end
