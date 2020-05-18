@@ -14,7 +14,6 @@ local unpack = unpack
 PlayerHealth.MODULE_NAME = _MODULE_NAME
 PlayerHealth.bars = nil
 PlayerHealth._UPDATE_INTERVAL_SECONDS = 0.15
-PlayerHealth._HealthBarFrame = nil
 
 local _defaults = {
   profile = {
@@ -41,13 +40,18 @@ function PlayerHealth:OnInitialize()
   ZxSimpleUI:registerModuleOptions(
     _MODULE_NAME, self.bars:getOptionTable(_DECORATIVE_NAME), _DECORATIVE_NAME)
 
-  self._timeSinceLastUpdate = 0
-  self._prevHealth = UnitHealthMax("PLAYER")
+  self:__init__()
 end
 
 function PlayerHealth:OnEnable()
   self:createBar()
   self:refreshConfig()
+end
+
+function PlayerHealth:__init__()
+  self._timeSinceLastUpdate = 0
+  self._prevHealth = UnitHealthMax("PLAYER")
+  self._HealthBarFrame = nil
 end
 
 function PlayerHealth:refreshConfig()

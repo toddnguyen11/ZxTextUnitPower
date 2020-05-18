@@ -13,16 +13,7 @@ local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, Un
 local UnitClass, UnitPowerType = UnitClass, UnitPowerType
 local unpack = unpack
 
--- "PRIVATE" variables
-local _curDbProfile
-local _onUpdateHandler, _onEventHandler
-local _timeSinceLastUpdate = 0
-local _prevPowerValue = UnitPowerMax("PLAYER")
-local _playerClass = UnitClass("PLAYER")
-local _playerPower, _playerPowerString
-
 PlayerPower._UPDATE_INTERVAL_SECONDS = 0.15
-PlayerPower._PowerBarFrame = nil
 
 local _defaults = {
   profile = {
@@ -47,13 +38,15 @@ _powerEventColorTable["UNIT_RUNIC_POWER"] = {0.0, 1.0, 1.0, 1.0}
 
 function PlayerPower:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
-  _curDbProfile = self.db.profile
-  self.bars = CoreBarTemplate:new(_curDbProfile)
+  self._curDbProfile = self.db.profile
+  self.bars = CoreBarTemplate:new(self._curDbProfile)
   self.bars.defaults = _defaults
 
   self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
   ZxSimpleUI:registerModuleOptions(_MODULE_NAME,
     self.bars:getOptionTable(_DECORATIVE_NAME), _DECORATIVE_NAME)
+
+  self:__init__()
 end
 
 function PlayerPower:OnEnable()
@@ -61,6 +54,15 @@ function PlayerPower:OnEnable()
   self:_setDefaultColor()
   self:createBar()
   self:refreshConfig()
+end
+
+function PlayerPower:__init__()
+  self._PowerBarFrame = nil
+  self._timeSinceLastUpdate = 0
+  self._prevPowerValue = UnitPowerMax("PLAYER")
+  self._playerClass = UnitClass("PLAYER")
+  self._playerPower = 0
+  self._playerPowerString = ""
 end
 
 function PlayerPower:refreshConfig()
@@ -77,8 +79,12 @@ function PlayerPower:createBar()
   self._PowerBarFrame = self.bars:createBar(powerPercent)
 
   self:_registerEvents()
-  self._PowerBarFrame:SetScript("OnUpdate", _onUpdateHandler)
-  self._PowerBarFrame:SetScript("OnEvent", _onEventHandler)
+  self._PowerBarFrame:SetScript("OnUpdate", function(argsTable, elapsed)
+    self:_onUpdateHandler(argsTable, elapsed)
+  end)
+  self._PowerBarFrame:SetScript("OnEvent", function(argsTable, event, unit)
+    self:_onEventHandler(argsTable, event, unit)
+  end)
   self._PowerBarFrame:Show()
 end
 
@@ -86,21 +92,24 @@ end
 -- # PRIVATE FUNCTIONS
 -- ####################################
 
----@param self any
+---@param argsTable table
 ---@param elapsed number
-function _onUpdateHandler(self, elapsed)
-  _timeSinceLastUpdate = _timeSinceLastUpdate + elapsed
-  if (_timeSinceLastUpdate > PlayerPower._UPDATE_INTERVAL_SECONDS) then
+function PlayerPower:_onUpdateHandler(argsTable, elapsed)
+  self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
+  if (self._timeSinceLastUpdate > PlayerPower._UPDATE_INTERVAL_SECONDS) then
     local curUnitPower = UnitPower("PLAYER")
-    if (curUnitPower ~= _prevPowerValue) then
+    if (curUnitPower ~= self._prevPowerValue) then
       PlayerPower:_setPowerValue(curUnitPower)
-      _prevPowerValue = curUnitPower
-      _timeSinceLastUpdate = 0
+      self._prevPowerValue = curUnitPower
+      self._timeSinceLastUpdate = 0
     end
   end
 end
 
-function _onEventHandler(self, event, unit)
+---@param argsTable table
+---@param event string
+---@param unit string
+function PlayerPower:_onEventHandler(argsTable, event, unit)
   local upperEvent = string.upper(event)
   local upperUnit = string.upper(unit)
   if (upperEvent == "UNIT_DISPLAYPOWER" and upperUnit == "PLAYER") then
@@ -132,12 +141,12 @@ function PlayerPower:_registerEvents()
 end
 
 function PlayerPower:_setUnitPowerType()
-  _playerPower, _playerPowerString = UnitPowerType("PLAYER")
+  self._playerPower, self._playerPowerString = UnitPowerType("PLAYER")
 end
 
 function PlayerPower:_setDefaultColor()
-  local powerTypeUpper = string.upper(_playerPowerString)
+  local powerTypeUpper = string.upper(self._playerPowerString)
   local colorTable = _powerEventColorTable["UNIT_" .. powerTypeUpper]
   _defaults.profile.color = colorTable
-  _curDbProfile.color = colorTable
+  self._curDbProfile.color = colorTable
 end
