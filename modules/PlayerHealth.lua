@@ -51,7 +51,7 @@ end
 function PlayerHealth:__init__()
   self._timeSinceLastUpdate = 0
   self._prevHealth = UnitHealthMax("PLAYER")
-  self._HealthBarFrame = nil
+  self._mainFrame = nil
 end
 
 function PlayerHealth:refreshConfig()
@@ -65,13 +65,13 @@ function PlayerHealth:createBar()
   local maxUnitHealth = UnitHealthMax("Player")
   local healthPercent = curUnitHealth / maxUnitHealth
 
-  self._HealthBarFrame = self.bars:createBar(healthPercent)
+  self._mainFrame = self.bars:createBar(healthPercent)
 
   self:_registerEvents()
-  self._HealthBarFrame:SetScript("OnUpdate", function(argsTable, elapsed)
+  self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
     self:_onUpdateHandler(argsTable, elapsed)
   end)
-  self._HealthBarFrame:Show()
+  self._mainFrame:Show()
 end
 
 -- ####################################
@@ -82,7 +82,7 @@ end
 ---@param elapsed number
 function PlayerHealth:_onUpdateHandler(argsTable, elapsed)
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
-  if (self._timeSinceLastUpdate > PlayerHealth._UPDATE_INTERVAL_SECONDS) then
+  if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
     local curUnitHealth = UnitHealth("Player")
     if (curUnitHealth ~= self._prevHealth) then
       self:_handleUnitHealthEvent(curUnitHealth)
@@ -96,10 +96,10 @@ function PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
   curUnitHealth = curUnitHealth or UnitHealth("Player")
   local maxUnitHealth = UnitHealthMax("Player")
   local healthPercent = curUnitHealth / maxUnitHealth
-  PlayerHealth._HealthBarFrame.text:SetText(string.format("%.1f%%", healthPercent * 100.0))
-  PlayerHealth._HealthBarFrame.statusBar:SetValue(healthPercent)
+  self._mainFrame.text:SetText(string.format("%.1f%%", healthPercent * 100.0))
+  self._mainFrame.statusBar:SetValue(healthPercent)
 end
 
 function PlayerHealth:_registerEvents()
-  self._HealthBarFrame:RegisterEvent("UNIT_HEALTH")
+  self._mainFrame:RegisterEvent("UNIT_HEALTH")
 end

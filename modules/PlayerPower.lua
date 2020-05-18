@@ -36,6 +36,16 @@ _powerEventColorTable["UNIT_RAGE"] = {1.0, 0.0, 0.0, 1.0}
 _powerEventColorTable["UNIT_ENERGY"] = {1.0, 1.0, 0.0, 1.0}
 _powerEventColorTable["UNIT_RUNIC_POWER"] = {0.0, 1.0, 1.0, 1.0}
 
+local _unitPowerTypeTable = {}
+_unitPowerTypeTable["MANA"] = 0
+_unitPowerTypeTable["RAGE"] = 1
+_unitPowerTypeTable["FOCUS"] = 2
+_unitPowerTypeTable["ENERGY"] = 3
+_unitPowerTypeTable["COMBOPOINTS"] = 4
+_unitPowerTypeTable["RUNES"] = 5
+_unitPowerTypeTable["RUNICPOWER"] = 6
+
+
 function PlayerPower:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   self._curDbProfile = self.db.profile
@@ -57,7 +67,7 @@ function PlayerPower:OnEnable()
 end
 
 function PlayerPower:__init__()
-  self._PowerBarFrame = nil
+  self._mainFrame = nil
   self._timeSinceLastUpdate = 0
   self._prevPowerValue = UnitPowerMax("PLAYER")
   self._playerClass = UnitClass("PLAYER")
@@ -76,16 +86,16 @@ function PlayerPower:createBar()
   local maxUnitPower = UnitPowerMax("PLAYER")
   local powerPercent = curUnitPower / maxUnitPower
 
-  self._PowerBarFrame = self.bars:createBar(powerPercent)
+  self._mainFrame = self.bars:createBar(powerPercent)
 
   self:_registerEvents()
-  self._PowerBarFrame:SetScript("OnUpdate", function(argsTable, elapsed)
+  self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
     self:_onUpdateHandler(argsTable, elapsed)
   end)
-  self._PowerBarFrame:SetScript("OnEvent", function(argsTable, event, unit)
+  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
     self:_onEventHandler(argsTable, event, unit)
   end)
-  self._PowerBarFrame:Show()
+  self._mainFrame:Show()
 end
 
 -- ####################################
@@ -96,7 +106,7 @@ end
 ---@param elapsed number
 function PlayerPower:_onUpdateHandler(argsTable, elapsed)
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
-  if (self._timeSinceLastUpdate > PlayerPower._UPDATE_INTERVAL_SECONDS) then
+  if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
     local curUnitPower = UnitPower("PLAYER")
     if (curUnitPower ~= self._prevPowerValue) then
       PlayerPower:_setPowerValue(curUnitPower)
@@ -122,8 +132,8 @@ function PlayerPower:_setPowerValue(curUnitPower)
   curUnitPower = curUnitPower or UnitPower("PLAYER")
   local maxUnitPower = UnitPowerMax("PLAYER")
   local powerPercent = curUnitPower / maxUnitPower
-  self._PowerBarFrame.text:SetText(string.format("%.1f%%", powerPercent * 100.0))
-  self._PowerBarFrame.statusBar:SetValue(powerPercent)
+  self._mainFrame.text:SetText(string.format("%.1f%%", powerPercent * 100.0))
+  self._mainFrame.statusBar:SetValue(powerPercent)
 end
 
 function PlayerPower:_handlePowerChanged()
@@ -134,10 +144,10 @@ end
 
 function PlayerPower:_registerEvents()
   for powerEvent, _ in pairs(_powerEventColorTable) do
-    self._PowerBarFrame:RegisterEvent(powerEvent)
+    self._mainFrame:RegisterEvent(powerEvent)
   end
   -- Register Druid's shapeshift form
-  self._PowerBarFrame:RegisterEvent("UNIT_DISPLAYPOWER")
+  self._mainFrame:RegisterEvent("UNIT_DISPLAYPOWER")
 end
 
 function PlayerPower:_setUnitPowerType()
