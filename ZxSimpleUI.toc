@@ -11,6 +11,8 @@ CoreOptionsInterface.lua
 CoreBarTemplate.lua
 
 modules\PlayerHealth.lua
+modules\PlayerName.lua
 modules\PlayerPower.lua
 modules\TargetHealth.lua
+modules\TargetName.lua
 modules\TargetPower.lua
