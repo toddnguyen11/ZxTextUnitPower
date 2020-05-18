@@ -108,13 +108,18 @@ function TargetPower:_registerEvents()
     self._mainFrame:RegisterEvent(powerEvent)
   end
   self._mainFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+  self._mainFrame:RegisterEvent("UNIT_DISPLAYPOWER")
 end
 
 function TargetPower:_onEventHandler(argsTable, event, unit)
   if event == "PLAYER_TARGET_CHANGED" then
     self:_handlePlayerTargetChanged()
-  elseif _powerEventColorTable[event] ~= nil then
-    self:_handleUnitPowerEvent()
+  elseif string.upper(unit) == "TARGET" then
+    if event == "UNIT_DISPLAYPOWER" then
+      self:_handlePowerChanged()
+    elseif _powerEventColorTable[event] ~= nil then
+      self:_handleUnitPowerEvent()
+    end
   end
 end
 
@@ -127,16 +132,10 @@ function TargetPower:_handlePlayerTargetChanged()
   end
 end
 
-function TargetPower:_onUpdateHandler(argsTable, elapsed)
-  self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
-  if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
-    local curUnitPower = UnitPower("Target")
-    if (curUnitPower ~= self._prevTargetPower) then
-      self:_handleUnitPowerEvent(curUnitPower)
-      self._prevTargetPower = curUnitPower
-      self._timeSinceLastUpdate = 0
-    end
-  end
+function TargetPower:_handlePowerChanged()
+  self:_setUnitPowerType()
+  self:refreshConfig()
+  self:_setColorThenShow()
 end
 
 function TargetPower:_handleUnitPowerEvent(curUnitPower)
@@ -148,6 +147,18 @@ function TargetPower:_handleUnitPowerEvent(curUnitPower)
     local maxUnitPower = UnitPowerMax("Target")
     local powerPercent = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
     self.bars:_setStatusBarValue(powerPercent)
+  end
+end
+
+function TargetPower:_onUpdateHandler(argsTable, elapsed)
+  self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
+  if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
+    local curUnitPower = UnitPower("Target")
+    if (curUnitPower ~= self._prevTargetPower) then
+      self:_handleUnitPowerEvent(curUnitPower)
+      self._prevTargetPower = curUnitPower
+      self._timeSinceLastUpdate = 0
+    end
   end
 end
 

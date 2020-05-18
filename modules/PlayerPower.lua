@@ -109,7 +109,7 @@ function PlayerPower:_onUpdateHandler(argsTable, elapsed)
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
     local curUnitPower = UnitPower("PLAYER")
     if (curUnitPower ~= self._prevPowerValue) then
-      PlayerPower:_setPowerValue(curUnitPower)
+      self:_setPowerValue(curUnitPower)
       self._prevPowerValue = curUnitPower
       self._timeSinceLastUpdate = 0
     end
@@ -123,7 +123,7 @@ function PlayerPower:_onEventHandler(argsTable, event, unit)
   local upperEvent = string.upper(event)
   local upperUnit = string.upper(unit)
   if (upperEvent == "UNIT_DISPLAYPOWER" and upperUnit == "PLAYER") then
-    PlayerPower:_handlePowerChanged()
+    self:_handlePowerChanged()
   end
 end
 
