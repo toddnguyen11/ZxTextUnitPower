@@ -4,8 +4,6 @@ local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
 local _MODULE_NAME = "PlayerHealth"
 local _DECORATIVE_NAME = "Player Health"
 local PlayerHealth = ZxSimpleUI:NewModule(_MODULE_NAME)
-PlayerHealth.MODULE_NAME = _MODULE_NAME
-PlayerHealth.bars = nil
 local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
@@ -13,11 +11,8 @@ local LibStub, GetScreenWidth, GetScreenHeight = LibStub, GetScreenWidth, GetScr
 local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
 local unpack = unpack
 
--- "PRIVATE" variables
-local _curDbProfile, _onUpdateHandler
-local _timeSinceLastUpdate = 0
-local _prevHealth = UnitHealthMax("PLAYER")
-
+PlayerHealth.MODULE_NAME = _MODULE_NAME
+PlayerHealth.bars = nil
 PlayerHealth._UPDATE_INTERVAL_SECONDS = 0.15
 PlayerHealth._HealthBarFrame = nil
 
@@ -38,12 +33,16 @@ local _defaults = {
 
 function PlayerHealth:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
-  _curDbProfile = self.db.profile
-  self.bars = CoreBarTemplate:new(_curDbProfile)
+  self._curDbProfile = self.db.profile
+  self.bars = CoreBarTemplate:new(self._curDbProfile)
+  self.bars.defaults = _defaults
 
   self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
   ZxSimpleUI:registerModuleOptions(
     _MODULE_NAME, self.bars:getOptionTable(_DECORATIVE_NAME), _DECORATIVE_NAME)
+
+  self._timeSinceLastUpdate = 0
+  self._prevHealth = UnitHealthMax("PLAYER")
 end
 
 function PlayerHealth:OnEnable()
@@ -65,7 +64,9 @@ function PlayerHealth:createBar()
   self._HealthBarFrame = self.bars:createBar(healthPercent)
 
   self:_registerEvents()
-  self._HealthBarFrame:SetScript("OnUpdate", _onUpdateHandler)
+  self._HealthBarFrame:SetScript("OnUpdate", function(argsTable, elapsed)
+    self:_onUpdateHandler(argsTable, elapsed)
+  end)
   self._HealthBarFrame:Show()
 end
 
@@ -73,15 +74,16 @@ end
 -- # PRIVATE FUNCTIONS
 -- ####################################
 
+---@param argsTable table
 ---@param elapsed number
-function _onUpdateHandler(self, elapsed)
-  _timeSinceLastUpdate = _timeSinceLastUpdate + elapsed
-  if (_timeSinceLastUpdate > PlayerHealth._UPDATE_INTERVAL_SECONDS) then
+function PlayerHealth:_onUpdateHandler(argsTable, elapsed)
+  self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
+  if (self._timeSinceLastUpdate > PlayerHealth._UPDATE_INTERVAL_SECONDS) then
     local curUnitHealth = UnitHealth("Player")
-    if (curUnitHealth ~= _prevHealth) then
-      PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
-      _prevHealth = curUnitHealth
-      _timeSinceLastUpdate = 0
+    if (curUnitHealth ~= self._prevHealth) then
+      self:_handleUnitHealthEvent(curUnitHealth)
+      self._prevHealth = curUnitHealth
+      self._timeSinceLastUpdate = 0
     end
   end
 end
@@ -90,7 +92,7 @@ function PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
   curUnitHealth = curUnitHealth or UnitHealth("Player")
   local maxUnitHealth = UnitHealthMax("Player")
   local healthPercent = curUnitHealth / maxUnitHealth
-  PlayerHealth._HealthBarFrame.Text:SetText(string.format("%.1f%%", healthPercent * 100.0))
+  PlayerHealth._HealthBarFrame.text:SetText(string.format("%.1f%%", healthPercent * 100.0))
   PlayerHealth._HealthBarFrame.statusBar:SetValue(healthPercent)
 end
 
