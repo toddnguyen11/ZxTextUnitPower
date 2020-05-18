@@ -175,7 +175,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           desc = "Bar Font Color",
           type = "color",
           get = function (infoTable) return self:_getOptionColor(infoTable) end,
-          set = function(infoTable, value) self:_setOptionColor(infoTable, value) end,
+          set = function(infoTable, r, g, b, a) self:_setOptionColor(infoTable, r, g, b, a) end,
           hasAlpha = false,
           order = self:incrementOrderIndex()
         },
@@ -200,7 +200,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           desc = "Bar Color",
           type = "color",
           get = function (infoTable) return self:_getOptionColor(infoTable) end,
-          set = function(infoTable, value) self:_setOptionColor(infoTable, value) end,
+          set = function(infoTable, r, g, b, a) self:_setOptionColor(infoTable, r, g, b, a) end,
           hasAlpha = true,
           order = self:incrementOrderIndex()
         }
@@ -248,8 +248,8 @@ function CoreBarTemplate:_getOptionColor(infoTable)
 end
 
 ---@param infoTable table
-function CoreBarTemplate:_setOptionColor(infoTable, ...)
-  self:_setOption(infoTable, {...})
+function CoreBarTemplate:_setOptionColor(infoTable, r, g, b, a)
+  self:_setOption(infoTable, {r, g, b, a})
 end
 
 function CoreBarTemplate:handlePositionXCenter()
@@ -283,27 +283,14 @@ function CoreBarTemplate:_refreshBarFrame()
     self._curDbProfile.positionx,
     self._curDbProfile.positiony
   )
-  self._mainFrame.mainText:SetFont(
-    media:Fetch("font", self._curDbProfile.font),
-    self._curDbProfile.fontsize, "OUTLINE"
-  )
-  self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
-  self._mainFrame.mainText:SetTextColor(unpack(self._curDbProfile.fontcolor))
-end
 
-function CoreBarTemplate:_refreshPowerBarFrame()
-  self._mainFrame:SetPoint(
-    "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
-    self._curDbProfile.positionx,
-    self._curDbProfile.positiony
-  )
+  self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
+
   self._mainFrame.mainText:SetFont(
     media:Fetch("font", self._curDbProfile.font),
     self._curDbProfile.fontsize, "OUTLINE"
   )
-  self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
-  self._mainFrame:SetBackdrop(self.frameBackdropTable)
   self._mainFrame.mainText:SetTextColor(unpack(self._curDbProfile.fontcolor))
 end
 
@@ -320,6 +307,5 @@ end
 
 ---@param strInput string
 function CoreBarTemplate:_setTextOnly(strInput)
-  self._mainFrame.statusBar:SetValue(0)
   self._mainFrame.mainText:SetText(strInput)
 end
