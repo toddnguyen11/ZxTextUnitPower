@@ -7,6 +7,7 @@
 
 embeds.xml
 Core.lua
+Utils.lua
 CoreOptionsInterface.lua
 CoreBarTemplate.lua
 
