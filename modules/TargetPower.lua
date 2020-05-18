@@ -55,7 +55,7 @@ function TargetPower:OnInitialize()
   self.bars = CoreBarTemplate:new(self._curDbProfile)
   self.bars.defaults = _defaults
 
-  self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
+  self:SetEnabledState(ZxSimpleUI:getModuleEnabledState(_MODULE_NAME))
   local optionsTable = self.bars:getOptionTable(_DECORATIVE_NAME)
   optionsTable = self:_addShowOption(optionsTable)
   optionsTable.args.color = nil
@@ -81,9 +81,8 @@ function TargetPower:createBar()
   local targetUnitPower = UnitPower("Target")
   local targetUnitMaxPower = UnitPowerMax("Target")
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitPower, targetUnitMaxPower)
-  local emptyName = ""
 
-  self._mainFrame = self.bars:createBar(percentage, emptyName)
+  self._mainFrame = self.bars:createBar(percentage)
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)

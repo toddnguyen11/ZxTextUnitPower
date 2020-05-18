@@ -17,7 +17,8 @@ function CoreBarTemplate:new(curDbProfile)
 end
 
 function CoreBarTemplate:__init__(curDbProfile)
-  self._orderIndex = 1
+  -- Start order index at 10 so other modules can easily put options in front
+  self._orderIndex = 10
   self._curDbProfile = curDbProfile
   self._mainFrame = nil
 
@@ -44,9 +45,8 @@ function CoreBarTemplate:__init__(curDbProfile)
 end
 
 ---@param percentValue number 0 to 1
----@param nameTextValue string
 ---@return table
-function CoreBarTemplate:createBar(percentValue, nameTextValue)
+function CoreBarTemplate:createBar(percentValue)
   self._mainFrame = CreateFrame("Frame", nil, UIParent)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
   self._mainFrame:SetBackdropColor(1, 0, 0, 1)
@@ -71,21 +71,13 @@ function CoreBarTemplate:createBar(percentValue, nameTextValue)
   self._mainFrame.statusBar:SetValue(percentValue)
   self:_setFrameWidthHeight()
 
-  self._mainFrame.nameText = self._mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
-  self._mainFrame.nameText:SetFont(
+  self._mainFrame.mainText = self._mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
+  self._mainFrame.mainText:SetFont(
       media:Fetch("font", self._curDbProfile.font),
       self._curDbProfile.fontsize, "OUTLINE")
-  self._mainFrame.nameText:SetTextColor(unpack(self._curDbProfile.fontcolor))
-  -- self._mainFrame.nameText:SetPoint("LEFT", self._mainFrame.statusBar, "LEFT", 5, 0)
-  self._mainFrame.nameText:SetText(string.format("%.10s", nameTextValue))
-
-  self._mainFrame.percentText = self._mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
-  self._mainFrame.percentText:SetFont(
-      media:Fetch("font", self._curDbProfile.font),
-      self._curDbProfile.fontsize, "OUTLINE")
-  self._mainFrame.percentText:SetTextColor(unpack(self._curDbProfile.fontcolor))
-  self._mainFrame.percentText:SetPoint("CENTER", self._mainFrame.statusBar, "CENTER", 0, 0)
-  self._mainFrame.percentText:SetText(string.format("%.1f%%", percentValue * 100.0))
+  self._mainFrame.mainText:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame.mainText:SetPoint("CENTER", self._mainFrame.statusBar, "CENTER", 0, 0)
+  self._mainFrame.mainText:SetText(string.format("%.1f%%", percentValue * 100.0))
 
   self._mainFrame:Show()
   return self._mainFrame
@@ -103,7 +95,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
         header = {
           type = "header",
           name = decorativeName,
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         width = {
           name = "Bar Width",
@@ -113,7 +105,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           step = 2,
           get = function (infoTable) return self:_getOption(infoTable) end,
           set = function(infoTable, value) self:_setOption(infoTable, value) end,
-          order = self:_incrementOrderIndex(),
+          order = self:incrementOrderIndex(),
         },
         height = {
           name = "Bar Height",
@@ -123,7 +115,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           step = 2,
           get = function (infoTable) return self:_getOption(infoTable) end,
           set = function(infoTable, value) self:_setOption(infoTable, value) end,
-          order = self:_incrementOrderIndex(),
+          order = self:incrementOrderIndex(),
         },
         positionx = {
           name = "Bar X",
@@ -133,14 +125,14 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           step = 1,
           get = function (infoTable) return self:_getOption(infoTable) end,
           set = function(infoTable, value) self:_setOption(infoTable, value) end,
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         positionx_center = {
           name = "Center Bar X",
           desc = "Center Bar X Position",
           type = "execute",
           func = function(...) self:handlePositionXCenter() end,
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         positiony = {
           name = "Bar Y",
@@ -150,14 +142,14 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           step = 1,
           get = function (infoTable) return self:_getOption(infoTable) end,
           set = function(infoTable, value) self:_setOption(infoTable, value) end,
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         positiony_center = {
           name = "Center Bar Y",
           desc = "Center Bar Y Position",
           type = "execute",
           func = function(...) self:handlePositionYCenter() end,
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         fontsize = {
           name = "Bar Font Size",
@@ -167,7 +159,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           step = 1,
           get = function (infoTable) return self:_getOption(infoTable) end,
           set = function(infoTable, value) self:_setOption(infoTable, value) end,
-          order = self:_incrementOrderIndex(),
+          order = self:incrementOrderIndex(),
         },
         -- LSM30_ is LibSharedMedia's custom controls
         font = {
@@ -176,7 +168,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           type = "select",
           dialogControl = "LSM30_Font",
           values = media:HashTable("font"),
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         fontcolor = {
           name = "Bar Font Color",
@@ -185,7 +177,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           get = function (infoTable) return self:_getOptionColor(infoTable) end,
           set = function(infoTable, value) self:_setOptionColor(infoTable, value) end,
           hasAlpha = false,
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         texture = {
           name = "Bar Texture",
@@ -193,7 +185,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           type = "select",
           dialogControl = "LSM30_Statusbar",
           values = media:HashTable("statusbar"),
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         border = {
           name = "Bar Border",
@@ -201,7 +193,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           type = "select",
           dialogControl = "LSM30_Border",
           values = media:HashTable("border"),
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         },
         color = {
           name = "Bar Color",
@@ -210,7 +202,7 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           get = function (infoTable) return self:_getOptionColor(infoTable) end,
           set = function(infoTable, value) self:_setOptionColor(infoTable, value) end,
           hasAlpha = true,
-          order = self:_incrementOrderIndex()
+          order = self:incrementOrderIndex()
         }
       }
     }
@@ -222,6 +214,12 @@ function CoreBarTemplate:refreshConfig()
   self:_setFrameWidthHeight()
   self:_refreshBarFrame()
   self:_refreshStatusBar()
+end
+
+function CoreBarTemplate:incrementOrderIndex()
+  local i = self._orderIndex
+  self._orderIndex = self._orderIndex + 1
+  return i
 end
 
 -- ####################################
@@ -252,12 +250,6 @@ end
 ---@param infoTable table
 function CoreBarTemplate:_setOptionColor(infoTable, ...)
   self:_setOption(infoTable, {...})
-end
-
-function CoreBarTemplate:_incrementOrderIndex()
-  local i = self._orderIndex
-  self._orderIndex = self._orderIndex + 1
-  return i
 end
 
 function CoreBarTemplate:handlePositionXCenter()
@@ -291,13 +283,13 @@ function CoreBarTemplate:_refreshBarFrame()
     self._curDbProfile.positionx,
     self._curDbProfile.positiony
   )
-  self._mainFrame.percentText:SetFont(
+  self._mainFrame.mainText:SetFont(
     media:Fetch("font", self._curDbProfile.font),
     self._curDbProfile.fontsize, "OUTLINE"
   )
   self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
-  self._mainFrame.percentText:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame.mainText:SetTextColor(unpack(self._curDbProfile.fontcolor))
 end
 
 function CoreBarTemplate:_refreshPowerBarFrame()
@@ -306,13 +298,13 @@ function CoreBarTemplate:_refreshPowerBarFrame()
     self._curDbProfile.positionx,
     self._curDbProfile.positiony
   )
-  self._mainFrame.percentText:SetFont(
+  self._mainFrame.mainText:SetFont(
     media:Fetch("font", self._curDbProfile.font),
     self._curDbProfile.fontsize, "OUTLINE"
   )
   self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
-  self._mainFrame.percentText:SetTextColor(unpack(self._curDbProfile.fontcolor))
+  self._mainFrame.mainText:SetTextColor(unpack(self._curDbProfile.fontcolor))
 end
 
 function CoreBarTemplate:_refreshStatusBar()
@@ -322,6 +314,12 @@ end
 
 ---@param percentValue number from 0.0 to 1.0
 function CoreBarTemplate:_setStatusBarValue(percentValue)
-  self._mainFrame.percentText:SetText(string.format("%.1f%%", percentValue * 100.0))
+  self._mainFrame.mainText:SetText(string.format("%.1f%%", percentValue * 100.0))
   self._mainFrame.statusBar:SetValue(percentValue)
+end
+
+---@param strInput string
+function CoreBarTemplate:_setTextOnly(strInput)
+  self._mainFrame.statusBar:SetValue(0)
+  self._mainFrame.mainText:SetText(strInput)
 end

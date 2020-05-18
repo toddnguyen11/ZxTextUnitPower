@@ -52,7 +52,7 @@ function PlayerPower:OnInitialize()
   self.bars = CoreBarTemplate:new(self._curDbProfile)
   self.bars.defaults = _defaults
 
-  self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
+  self:SetEnabledState(ZxSimpleUI:getModuleEnabledState(_MODULE_NAME))
   ZxSimpleUI:registerModuleOptions(_MODULE_NAME,
     self.bars:getOptionTable(_DECORATIVE_NAME), _DECORATIVE_NAME)
 
@@ -85,9 +85,8 @@ function PlayerPower:createBar()
   local curUnitPower = UnitPower("PLAYER")
   local maxUnitPower = UnitPowerMax("PLAYER")
   local percentage = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
-  local emptyName = ""
 
-  self._mainFrame = self.bars:createBar(percentage, emptyName)
+  self._mainFrame = self.bars:createBar(percentage)
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)

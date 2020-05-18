@@ -15,7 +15,10 @@ ZxSimpleUI.SCREEN_HEIGHT = math.floor(GetScreenHeight())
 --- "PRIVATE" variables
 local _defaults = {
   profile = {
-    modules = { ["*"] = true }
+    modules = {
+      ["*"] = {enabled = true},
+      PlayerName = {enabled = false}
+    },
   }
 }
 
@@ -53,17 +56,13 @@ end
 --   frame:AddChild(healthbar)
 -- end
 
-function ZxSimpleUI:isModuleEnabled(module)
-  return self.db.profile.modules[module]
-end
-
 ---Refresh the configuration for this AddOn as well as any modules
 ---that are added to this AddOn
 function ZxSimpleUI:refreshConfig()
   for k, curModule in ZxSimpleUI:IterateModules() do
-    if ZxSimpleUI:isModuleEnabled(k) and not curModule:IsEnabled() then
+    if ZxSimpleUI:getModuleEnabledState(k) and not curModule:IsEnabled() then
       ZxSimpleUI:EnableModule(k)
-    elseif not ZxSimpleUI:isModuleEnabled(k) and curModule:IsEnabled() then
+    elseif not ZxSimpleUI:getModuleEnabledState(k) and curModule:IsEnabled() then
       ZxSimpleUI:DisableModule(k)
     end
 
@@ -90,4 +89,21 @@ end
 function ZxSimpleUI:calcPercentSafely(currentValue, maxValue)
   if (maxValue == 0.0) then return 0.0 end
   return currentValue / maxValue
+end
+
+---@param module string
+function ZxSimpleUI:getModuleEnabledState(module)
+  return self.db.profile.modules[module].enabled
+end
+
+---@param module string
+---@param isEnabled boolean
+function ZxSimpleUI:setModuleEnabledState(module, isEnabled)
+  local oldEnabledValue = self.db.profile.modules[module].enabled
+  self.db.profile.modules[module].enabled = isEnabled
+  if oldEnabledValue ~= isEnabled then
+    if isEnabled then self:EnableModule(module)
+    else self:DisableModule(module)
+    end
+  end
 end

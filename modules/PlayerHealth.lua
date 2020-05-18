@@ -37,7 +37,7 @@ function PlayerHealth:OnInitialize()
   self.bars = CoreBarTemplate:new(self._curDbProfile)
   self.bars.defaults = _defaults
 
-  self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
+  self:SetEnabledState(ZxSimpleUI:getModuleEnabledState(_MODULE_NAME))
   ZxSimpleUI:registerModuleOptions(
     _MODULE_NAME, self.bars:getOptionTable(_DECORATIVE_NAME), _DECORATIVE_NAME)
 
@@ -65,9 +65,8 @@ function PlayerHealth:createBar()
   local curUnitHealth = UnitHealth("Player")
   local maxUnitHealth = UnitHealthMax("Player")
   local percentage = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
-  local unitName = UnitName("PLAYER") or ""
 
-  self._mainFrame = self.bars:createBar(percentage, unitName)
+  self._mainFrame = self.bars:createBar(percentage)
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)

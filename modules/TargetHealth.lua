@@ -40,7 +40,7 @@ function TargetHealth:OnInitialize()
   self.bars = CoreBarTemplate:new(self._curDbProfile)
   self.bars.defaults = _defaults
 
-  self:SetEnabledState(ZxSimpleUI:isModuleEnabled(_MODULE_NAME))
+  self:SetEnabledState(ZxSimpleUI:getModuleEnabledState(_MODULE_NAME))
   local optionsTable = self.bars:getOptionTable(_DECORATIVE_NAME)
   optionsTable = self:_addShowOption(optionsTable)
   ZxSimpleUI:registerModuleOptions(
@@ -64,9 +64,8 @@ function TargetHealth:createBar()
   local targetUnitHealth = UnitHealth("Target")
   local targetUnitMaxHealth = UnitHealthMax("Target")
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitHealth, targetUnitMaxHealth)
-  local targetName, blah = UnitName("TARGET") or ""
 
-  self._mainFrame = self.bars:createBar(percentage, targetName)
+  self._mainFrame = self.bars:createBar(percentage)
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
@@ -104,7 +103,6 @@ end
 function TargetHealth:_handlePlayerTargetChanged()
   local targetHealth = UnitHealth("Target")
   if targetHealth > 0 then
-    self._mainFrame.nameText:SetText(string.format("%.10s", UnitName("TARGET")))
     self._mainFrame:Show()
   else
     self._mainFrame:Hide()
