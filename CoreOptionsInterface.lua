@@ -5,10 +5,8 @@ local AceGUI = LibStub("AceGUI-3.0")
 local media = LibStub("LibSharedMedia-3.0")
 
 local CoreOptionsInterface = ZxSimpleUI:NewModule("Options", nil)
-CoreOptionsInterface._SCREEN_WIDTH = math.floor(GetScreenWidth())
-CoreOptionsInterface._SCREEN_HEIGHT = math.floor(GetScreenHeight())
 CoreOptionsInterface._MIN_BAR_SIZE = 10
-CoreOptionsInterface._MAX_BAR_SIZE = math.floor(CoreOptionsInterface._SCREEN_WIDTH / 2)
+CoreOptionsInterface._MAX_BAR_SIZE = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2)
 
 -- PRIVATE functions and variables
 ---@param key string
@@ -115,7 +113,7 @@ end
 function _handle_healthbar_positionx_center()
   local width = _curDbProfile.healthbar_width
 
-  local centerXPos = math.floor(CoreOptionsInterface._SCREEN_WIDTH / 2 - width / 2)
+  local centerXPos = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2 - width / 2)
   _curDbProfile.healthbar_positionx = centerXPos
   ZxSimpleUI:refreshConfig()
 end
@@ -123,7 +121,7 @@ end
 function _handle_healthbar_positiony_center()
   local height = _curDbProfile.healthbar_height
 
-  local centerYPos = math.floor(CoreOptionsInterface._SCREEN_HEIGHT / 2 - height / 2)
+  local centerYPos = math.floor(ZxSimpleUI.SCREEN_HEIGHT / 2 - height / 2)
   _curDbProfile.healthbar_positiony = centerYPos
   ZxSimpleUI:refreshConfig()
 end

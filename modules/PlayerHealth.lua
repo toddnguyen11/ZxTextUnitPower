@@ -7,7 +7,7 @@ local PlayerHealth = ZxSimpleUI:NewModule(_MODULE_NAME)
 local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
-local LibStub, GetScreenWidth, GetScreenHeight = LibStub, GetScreenWidth, GetScreenHeight
+local LibStub = LibStub
 local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
 local unpack = unpack
 
