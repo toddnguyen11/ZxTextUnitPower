@@ -47,7 +47,8 @@ end
 ---@param percentValue number 0 to 1
 ---@return table
 function CoreBarTemplate:createBar(percentValue)
-  self._mainFrame = CreateFrame("Frame", nil, UIParent)
+  -- self._mainFrame = CreateFrame("Frame", nil, UIParent)
+  self._mainFrame = CreateFrame("Button", nil, UIParent)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
   self._mainFrame:SetBackdropColor(1, 0, 0, 1)
   self._mainFrame:SetPoint(
@@ -56,6 +57,10 @@ function CoreBarTemplate:createBar(percentValue)
     self._curDbProfile.positiony
   )
 
+  self._mainFrame:RegisterForClicks("AnyUp")
+  self._mainFrame:SetAttribute("*type1", "target")
+  self._mainFrame:SetAttribute("*type2", "menu")
+
   self._mainFrame.bgFrame = self._mainFrame:CreateTexture(nil, "BACKGROUND")
   self._mainFrame.bgFrame:SetTexture(0, 0, 0, 0.8)
   self._mainFrame.bgFrame:SetAllPoints()
@@ -63,7 +68,8 @@ function CoreBarTemplate:createBar(percentValue)
   self._mainFrame.statusBar = CreateFrame("StatusBar", nil, self._mainFrame)
   self._mainFrame.statusBar:ClearAllPoints()
   self._mainFrame.statusBar:SetPoint("CENTER", self._mainFrame, "CENTER")
-  self._mainFrame.statusBar:SetStatusBarTexture(media:Fetch("statusbar", self._curDbProfile.texture))
+  self._mainFrame.statusBar:SetStatusBarTexture(
+    media:Fetch("statusbar", self._curDbProfile.texture), "BORDER")
   self._mainFrame.statusBar:GetStatusBarTexture():SetHorizTile(false)
   self._mainFrame.statusBar:GetStatusBarTexture():SetVertTile(false)
   self._mainFrame.statusBar:SetStatusBarColor(unpack(self._curDbProfile.color))
@@ -71,7 +77,7 @@ function CoreBarTemplate:createBar(percentValue)
   self._mainFrame.statusBar:SetValue(percentValue)
   self:_setFrameWidthHeight()
 
-  self._mainFrame.mainText = self._mainFrame.statusBar:CreateFontString(nil, "OVERLAY")
+  self._mainFrame.mainText = self._mainFrame.statusBar:CreateFontString(nil, "BORDER")
   self._mainFrame.mainText:SetFont(
       media:Fetch("font", self._curDbProfile.font),
       self._curDbProfile.fontsize, "OUTLINE")
@@ -295,7 +301,9 @@ function CoreBarTemplate:_refreshBarFrame()
 end
 
 function CoreBarTemplate:_refreshStatusBar()
-  self._mainFrame.statusBar:SetStatusBarTexture(media:Fetch("statusbar", self._curDbProfile.texture))
+  self._mainFrame.statusBar:SetStatusBarTexture(
+    media:Fetch("statusbar", self._curDbProfile.texture), "BORDER"
+  )
   self._mainFrame.statusBar:SetStatusBarColor(unpack(self._curDbProfile.color))
 end
 

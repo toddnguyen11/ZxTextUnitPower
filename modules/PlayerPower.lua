@@ -11,6 +11,7 @@ local media = LibStub("LibSharedMedia-3.0")
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower, UnitPowerMax
 local UnitClass, UnitPowerType = UnitClass, UnitPowerType
+local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
 local unpack = unpack
 
 PlayerPower._UPDATE_INTERVAL_SECONDS = 0.15
@@ -95,6 +96,10 @@ function PlayerPower:createBar()
   self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
     self:_onEventHandler(argsTable, event, unit)
   end)
+  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
+    self:_onClickHandler(argsTable, buttonType, isButtonDown)
+  end)
+
   self._mainFrame:Show()
 end
 
@@ -124,6 +129,12 @@ function PlayerPower:_onEventHandler(argsTable, event, unit)
   local upperUnit = string.upper(unit)
   if (upperEvent == "UNIT_DISPLAYPOWER" and upperUnit == "PLAYER") then
     self:_handlePowerChanged()
+  end
+end
+
+function PlayerPower:_onClickHandler(argsTable, buttonType, isButtonDown)
+  if buttonType == "RightButton" then
+    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
   end
 end
 

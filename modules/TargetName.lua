@@ -11,6 +11,7 @@ local media = LibStub("LibSharedMedia-3.0")
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitName = UIParent, CreateFrame, UnitName
 local UnitName, UnitHealth = UnitName, UnitHealth
+local ToggleDropDownMenu, TargetFrameDropDown = ToggleDropDownMenu, TargetFrameDropDown
 local unpack = unpack
 
 TargetName.MODULE_NAME = _MODULE_NAME
@@ -65,6 +66,10 @@ function TargetName:createBar()
   self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
     self:_onEventHandler(argsTable, event, unit)
   end)
+  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
+    self:_onClickHandler(argsTable, buttonType, isButtonDown)
+  end)
+
   self._mainFrame:Hide()
 end
 
@@ -114,6 +119,12 @@ function TargetName:_onEventHandler(argsTable, event, unit, ...)
     self:_handleUnitHealthEvent()
   elseif event == "PLAYER_TARGET_CHANGED" then
     self:_handlePlayerTargetChanged()
+  end
+end
+
+function TargetName:_onClickHandler(argsTable, buttonType, isButtonDown)
+  if buttonType == "RightButton" then
+    ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor")
   end
 end
 

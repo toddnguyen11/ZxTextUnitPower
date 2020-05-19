@@ -13,6 +13,7 @@ local media = LibStub("LibSharedMedia-3.0")
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
 local UnitName, MAX_COMBO_POINTS, GetComboPoints = UnitName, MAX_COMBO_POINTS, GetComboPoints
+local ToggleDropDownMenu, TargetFrameDropDown = ToggleDropDownMenu, TargetFrameDropDown
 local unpack = unpack
 
 TargetHealth.MODULE_NAME = _MODULE_NAME
@@ -60,6 +61,11 @@ function TargetHealth:__init__()
   self._mainFrame = nil
   self._comboPointsTable = {}
   self._allComboPointsHidden = true
+
+  self._MEDIUM_COMBO_POINTS = 3
+  self._yellowColor = {1.0, 1.0, 0.0, 1.0}
+  self._orangeColor = {1.0, 0.65, 0.0, 1.0}
+  self._redColor = {1.0, 0.0, 0.0, 1.0}
 end
 
 function TargetHealth:createBar()
@@ -77,6 +83,10 @@ function TargetHealth:createBar()
   self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
     self:_onEventHandler(argsTable, event, unit)
   end)
+  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
+    self:_onClickHandler(argsTable, buttonType, isButtonDown)
+  end)
+
   self._mainFrame:Hide()
 end
 
@@ -130,6 +140,12 @@ function TargetHealth:_onUpdateHandler(argsTable, elapsed)
   end
 end
 
+function TargetHealth:_onClickHandler(argsTable, buttonType, isButtonDown)
+  if buttonType == "RightButton" then
+    ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor")
+  end
+end
+
 function TargetHealth:_handleUnitHealthEvent(curUnitHealth)
   curUnitHealth = curUnitHealth or UnitHealth("TARGET")
   if (curUnitHealth > 0) then
@@ -147,7 +163,9 @@ function TargetHealth:_handleComboPoints()
     self._allComboPointsHidden = true
   else
     for i = 1, comboPoints do
-      self._comboPointsTable[i]:Show()
+      local currentTexture = self._comboPointsTable[i]
+      self:_setComboPointsColor(comboPoints, currentTexture)
+      currentTexture:Show()
       self._allComboPointsHidden = false
     end
   end
@@ -184,35 +202,55 @@ function TargetHealth:_createComboPointDisplay()
   local totalNumberOfGaps = horizGap * (MAX_COMBO_POINTS - 1)
   local comboWidth = (self._mainFrame:GetWidth() - totalNumberOfGaps) / MAX_COMBO_POINTS
   local comboHeight = 8
+
+  local comboFrame = CreateFrame("Frame", nil, self._mainFrame)
+  comboFrame:SetWidth(self._mainFrame:GetWidth())
+  comboFrame:SetHeight(comboHeight)
+  comboFrame:SetPoint("BOTTOMLEFT", self._mainFrame, "TOPLEFT", 0, 0)
+
   -- Create all MAX_COMBO_POINTS frames
   for i = 1, MAX_COMBO_POINTS do
     local parentFrame, anchorDirection = nil, nil
     local xoffset, yoffset = 0, 0
     if i == 1 then
-      parentFrame = self._mainFrame
+      parentFrame = comboFrame
       anchorDirection = "BOTTOMLEFT"
       xoffset = 0
-      yoffset = -comboHeight
+      yoffset = 0
     else
       parentFrame = self._comboPointsTable[i - 1]
       anchorDirection = "BOTTOMRIGHT"
       xoffset = horizGap
       yoffset = 0
     end
-    local comboTexture = self._mainFrame:CreateTexture(nil, "OVERLAY")
+    local comboTexture = comboFrame:CreateTexture(nil, "OVERLAY")
     comboTexture:ClearAllPoints()
     comboTexture:SetWidth(comboWidth)
     comboTexture:SetHeight(comboHeight)
     comboTexture:SetPoint("BOTTOMLEFT", parentFrame, anchorDirection, xoffset, yoffset)
     comboTexture:SetTexture(media:Fetch("statusbar", self._curDbProfile.texture))
-    comboTexture:SetVertexColor(1.0, 1.0, 0.0, 1.0)
+    comboTexture:SetVertexColor(unpack(self._yellowColor))
     comboTexture:Hide()
     self._comboPointsTable[i] = comboTexture
   end
+
+  self._mainFrame.comboFrame = comboFrame
 end
 
 function TargetHealth:_hideAllComboPoints()
   for i = 1, MAX_COMBO_POINTS do
     self._comboPointsTable[i]:Hide()
+  end
+end
+
+---@param comboPoints integer
+---@param currentTexture table
+function TargetHealth:_setComboPointsColor(comboPoints, currentTexture)
+  if comboPoints >= MAX_COMBO_POINTS then
+    currentTexture:SetVertexColor(unpack(self._redColor))
+  elseif comboPoints >= self._MEDIUM_COMBO_POINTS then
+    currentTexture:SetVertexColor(unpack(self._orangeColor))
+  else
+    currentTexture:SetVertexColor(unpack(self._yellowColor))
   end
 end

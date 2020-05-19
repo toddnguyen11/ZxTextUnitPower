@@ -10,6 +10,7 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitName = UIParent, CreateFrame, UnitName
+local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
 local unpack = unpack
 
 PlayerName.MODULE_NAME = _MODULE_NAME
@@ -60,6 +61,10 @@ function PlayerName:createBar()
   self._mainFrame = self.bars:createBar(percentage)
   self.bars:_setTextOnly(self:_getFormattedName())
 
+  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
+    self:_onClickHandler(argsTable, buttonType, isButtonDown)
+  end)
+
   self._mainFrame:Show()
 end
 
@@ -91,6 +96,12 @@ function PlayerName:_getAppendedEnableOptionTable()
       order = 1
   }
   return options
+end
+
+function PlayerName:_onClickHandler(argsTable, buttonType, isButtonDown)
+  if buttonType == "RightButton" then
+    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
+  end
 end
 
 ---@return string formattedName

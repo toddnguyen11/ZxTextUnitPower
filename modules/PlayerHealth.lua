@@ -10,6 +10,7 @@ local media = LibStub("LibSharedMedia-3.0")
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
 local UnitName = UnitName
+local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
 local unpack = unpack
 
 PlayerHealth.MODULE_NAME = _MODULE_NAME
@@ -72,6 +73,9 @@ function PlayerHealth:createBar()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
     self:_onUpdateHandler(argsTable, elapsed)
   end)
+  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
+    self:_onClickHandler(argsTable, buttonType, isButtonDown)
+  end)
   self._mainFrame:Show()
 end
 
@@ -90,6 +94,12 @@ function PlayerHealth:_onUpdateHandler(argsTable, elapsed)
       self._prevHealth = curUnitHealth
       self._timeSinceLastUpdate = 0
     end
+  end
+end
+
+function PlayerHealth:_onClickHandler(argsTable, buttonType, isButtonDown)
+  if buttonType == "RightButton" then
+    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
   end
 end
 

@@ -14,6 +14,7 @@ local LibStub = LibStub
 local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower, UnitPowerMax
 local UnitName = UnitName
 local UnitHealth, UnitPowerType = UnitHealth, UnitPowerType
+local ToggleDropDownMenu, TargetFrameDropDown = ToggleDropDownMenu, TargetFrameDropDown
 local unpack = unpack
 
 TargetPower.MODULE_NAME = _MODULE_NAME
@@ -92,6 +93,10 @@ function TargetPower:createBar()
   self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
     self:_onEventHandler(argsTable, event, unit)
   end)
+  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
+    self:_onClickHandler(argsTable, buttonType, isButtonDown)
+  end)
+
   self._mainFrame:Hide()
 end
 
@@ -160,6 +165,12 @@ function TargetPower:_onUpdateHandler(argsTable, elapsed)
       self._prevTargetPower = curUnitPower
       self._timeSinceLastUpdate = 0
     end
+  end
+end
+
+function TargetPower:_onClickHandler(argsTable, buttonType, isButtonDown)
+  if buttonType == "RightButton" then
+    ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor")
   end
 end
 
