@@ -14,9 +14,6 @@ local UnitName = UnitName
 PlayerHealth47.MODULE_NAME = _MODULE_NAME
 PlayerHealth47.bars = nil
 PlayerHealth47.unit = "player"
--- if 60 FPS, then 1 frame will be refreshed in 16.67 milliseconds.
-local refreshEveryNFrame = 10
-PlayerHealth47._UPDATE_INTERVAL_SECONDS = 16 * refreshEveryNFrame / 1000.0
 
 local _defaults = {
   profile = {
@@ -81,7 +78,7 @@ end
 ---@param elapsed number
 function PlayerHealth47:_onUpdateHandler(argsTable, elapsed)
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
-  if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
+  if (self._timeSinceLastUpdate > ZxSimpleUI.UPDATE_INTERVAL_SECONDS) then
     local curUnitHealth = UnitHealth(self.unit)
     if (curUnitHealth ~= self._prevHealth) then
       self:_handleUnitHealthEvent(curUnitHealth)

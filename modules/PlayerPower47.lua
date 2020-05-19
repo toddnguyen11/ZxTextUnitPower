@@ -12,9 +12,6 @@ local PlayerPower47 = ZxSimpleUI:NewModule(_MODULE_NAME)
 PlayerPower47.MODULE_NAME = _MODULE_NAME
 
 PlayerPower47.unit = "player"
--- if 60 FPS, then 1 frame will be refreshed in 16.67 milliseconds.
-local refreshEveryNFrame = 10
-PlayerPower47._UPDATE_INTERVAL_SECONDS = 16 * refreshEveryNFrame / 1000.0
 
 local _defaults = {
   profile = {
@@ -100,7 +97,7 @@ end
 ---@param elapsed number
 function PlayerPower47:_onUpdateHandler(argsTable, elapsed)
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
-  if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
+  if (self._timeSinceLastUpdate > ZxSimpleUI.UPDATE_INTERVAL_SECONDS) then
     local curUnitPower = UnitPower(self.unit)
     if (curUnitPower ~= self._prevPowerValue) then
       self:_setPowerValue(curUnitPower)

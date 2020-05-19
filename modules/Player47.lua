@@ -4,14 +4,14 @@ local PlayerHealth47 = ZxSimpleUI:GetModule("PlayerHealth47")
 local PlayerPower47 = ZxSimpleUI:GetModule("PlayerPower47")
 local PlayerName47 = ZxSimpleUI:GetModule("PlayerName47")
 
+-- Upvalues
+local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
+local RegisterUnitWatch = RegisterUnitWatch
+
 local _MODULE_NAME = "Player47"
 local _DECORATIVE_NAME = "Player"
 local Player47 = ZxSimpleUI:NewModule(_MODULE_NAME)
 Player47.unit = "player"
-
--- Upvalues
-local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
-local RegisterUnitWatch = RegisterUnitWatch
 
 function Player47:OnInitialize()
   self:__init__()
@@ -24,6 +24,9 @@ end
 
 function Player47:__init__()
   self._barLists = {}
+end
+
+function Player47:refreshConfig()
 end
 
 -- ####################################

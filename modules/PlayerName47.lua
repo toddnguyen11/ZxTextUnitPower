@@ -13,9 +13,6 @@ local PlayerName47 = ZxSimpleUI:NewModule(_MODULE_NAME)
 PlayerName47.MODULE_NAME = _MODULE_NAME
 PlayerName47.bars = nil
 PlayerName47.unit = "player"
--- if 60 FPS, then 1 frame will be refreshed in 16.67 milliseconds.
-local refreshEveryNFrame = 10
-PlayerName47._UPDATE_INTERVAL_SECONDS = 16 * refreshEveryNFrame / 1000.0
 
 local _defaults = {
   profile = {
