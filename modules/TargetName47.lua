@@ -16,7 +16,6 @@ local unpack = unpack
 
 TargetName47.MODULE_NAME = _MODULE_NAME
 TargetName47.bars = nil
-TargetName47._UPDATE_INTERVAL_SECONDS = 0.15
 
 local _defaults = {
   profile = {
@@ -47,8 +46,6 @@ function TargetName47:OnInitialize()
 end
 
 function TargetName47:OnEnable()
-  self:createBar()
-  self:refreshConfig()
 end
 
 function TargetName47:__init__()
@@ -60,20 +57,14 @@ end
 function TargetName47:createBar()
   local percentage = 1.0
   self._mainFrame = self.bars:createBar(percentage)
-  -- Set this so Blizzard's internal engine can find `unit`
-  self._mainFrame.unit = "Target"
 
   self:_setFormattedName()
 
   self:_registerEvents()
-  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
-    self:_onEventHandler(argsTable, event, unit)
-  end)
-  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
-    self:_onClickHandler(argsTable, buttonType, isButtonDown)
-  end)
+  self:_setScriptHandlers()
 
   self._mainFrame:Hide()
+  return self._mainFrame
 end
 
 function TargetName47:refreshConfig()
@@ -119,16 +110,18 @@ function TargetName47:_registerEvents()
   self._mainFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 end
 
+function TargetName47:_setScriptHandlers()
+  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
+    self:_onEventHandler(argsTable, event, unit)
+  end)
+end
+
 function TargetName47:_onEventHandler(argsTable, event, unit, ...)
   if event == "UNIT_HEALTH" and string.upper(unit) == "TARGET" then
     self:_handleUnitHealthEvent()
   elseif event == "PLAYER_TARGET_CHANGED" then
     self:_handlePlayerTargetChanged()
   end
-end
-
-function TargetName47:_onClickHandler(argsTable, buttonType, isButtonDown)
-  if buttonType == "RightButton" then ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor") end
 end
 
 function TargetName47:_handleUnitHealthEvent(curUnitHealth)

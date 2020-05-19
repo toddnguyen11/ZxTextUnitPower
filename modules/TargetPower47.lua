@@ -20,7 +20,6 @@ local unpack = unpack
 
 TargetPower47.MODULE_NAME = _MODULE_NAME
 TargetPower47.bars = nil
-TargetPower47._UPDATE_INTERVAL_SECONDS = 0.15
 
 local _defaults = {
   profile = {
@@ -68,9 +67,6 @@ function TargetPower47:OnInitialize()
 end
 
 function TargetPower47:OnEnable()
-  self:_setUnitPowerType()
-  self:createBar()
-  self:refreshConfig()
 end
 
 function TargetPower47:__init__()
@@ -80,26 +76,17 @@ function TargetPower47:__init__()
 end
 
 function TargetPower47:createBar()
+  self:_setUnitPowerType()
   local targetUnitPower = UnitPower("TARGET")
   local targetUnitMaxPower = UnitPowerMax("TARGET")
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitPower, targetUnitMaxPower)
-
   self._mainFrame = self.bars:createBar(percentage)
-  -- Set this so Blizzard's internal engine can find `unit`
-  self._mainFrame.unit = "Target"
 
   self:_registerEvents()
-  self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
-    self:_onUpdateHandler(argsTable, elapsed)
-  end)
-  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
-    self:_onEventHandler(argsTable, event, unit)
-  end)
-  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
-    self:_onClickHandler(argsTable, buttonType, isButtonDown)
-  end)
+  self:_setScriptHandlers()
 
   self._mainFrame:Hide()
+  return self._mainFrame
 end
 
 function TargetPower47:refreshConfig()
@@ -114,6 +101,15 @@ function TargetPower47:_registerEvents()
   for powerEvent, _ in pairs(_powerEventColorTable) do self._mainFrame:RegisterEvent(powerEvent) end
   self._mainFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
   self._mainFrame:RegisterEvent("UNIT_DISPLAYPOWER")
+end
+
+function TargetPower47:_setScriptHandlers()
+  self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
+    self:_onUpdateHandler(argsTable, elapsed)
+  end)
+  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
+    self:_onEventHandler(argsTable, event, unit)
+  end)
 end
 
 function TargetPower47:_onEventHandler(argsTable, event, unit)
@@ -156,7 +152,7 @@ end
 function TargetPower47:_onUpdateHandler(argsTable, elapsed)
   if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
-  if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
+  if (self._timeSinceLastUpdate > ZxSimpleUI.UPDATE_INTERVAL_SECONDS) then
     local curUnitPower = UnitPower("TARGET")
     if (curUnitPower ~= self._prevTargetPower47) then
       self:_handleUnitPowerEvent(curUnitPower)

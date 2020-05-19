@@ -19,7 +19,6 @@ local unpack = unpack
 
 TargetHealth47.MODULE_NAME = _MODULE_NAME
 TargetHealth47.bars = nil
-TargetHealth47._UPDATE_INTERVAL_SECONDS = 0.15
 
 local _defaults = {
   profile = {
@@ -51,8 +50,6 @@ function TargetHealth47:OnInitialize()
 end
 
 function TargetHealth47:OnEnable()
-  self:createBar()
-  self:refreshConfig()
 end
 
 function TargetHealth47:__init__()
@@ -74,23 +71,13 @@ function TargetHealth47:createBar()
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitHealth, targetUnitMaxHealth)
 
   self._mainFrame = self.bars:createBar(percentage)
-  -- Set this so Blizzard's internal engine can find `unit`
-  self._mainFrame.unit = "Target"
   self:_createComboPointDisplay()
 
   self:_registerEvents()
-  self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
-    self:_onUpdateHandler(argsTable, elapsed)
-  end)
-  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
-    self:_onEventHandler(argsTable, event, unit)
-  end)
-  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
-    self:_onClickHandler(argsTable, buttonType, isButtonDown)
-  end)
+  self:_setScriptHandlers()
 
-  ZxSimpleUI:enableTooltip(self._mainFrame)
   self._mainFrame:Hide()
+  return self._mainFrame
 end
 
 function TargetHealth47:refreshConfig()
@@ -105,6 +92,15 @@ function TargetHealth47:_registerEvents()
   self._mainFrame:RegisterEvent("UNIT_HEALTH")
   self._mainFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
   self._mainFrame:RegisterEvent("UNIT_COMBO_POINTS")
+end
+
+function TargetHealth47:_setScriptHandlers()
+  self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
+    self:_onUpdateHandler(argsTable, elapsed)
+  end)
+  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
+    self:_onEventHandler(argsTable, event, unit)
+  end)
 end
 
 function TargetHealth47:_onEventHandler(argsTable, event, unit)
@@ -131,7 +127,7 @@ end
 function TargetHealth47:_onUpdateHandler(argsTable, elapsed)
   if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
-  if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
+  if (self._timeSinceLastUpdate > ZxSimpleUI.UPDATE_INTERVAL_SECONDS) then
     local curUnitHealth = UnitHealth("TARGET")
     if (curUnitHealth ~= self._prevTargetHealth47) then
       self:_handleUnitHealthEvent(curUnitHealth)
@@ -139,10 +135,6 @@ function TargetHealth47:_onUpdateHandler(argsTable, elapsed)
       self._timeSinceLastUpdate = 0
     end
   end
-end
-
-function TargetHealth47:_onClickHandler(argsTable, buttonType, isButtonDown)
-  if buttonType == "RightButton" then ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor") end
 end
 
 function TargetHealth47:_handleUnitHealthEvent(curUnitHealth)
