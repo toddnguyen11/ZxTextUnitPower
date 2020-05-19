@@ -2,22 +2,20 @@ local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
 local Utils = ZxSimpleUI.Utils
 
-local _MODULE_NAME = "PlayerName"
-local _DECORATIVE_NAME = "Player Name"
-local PlayerName = ZxSimpleUI:NewModule(_MODULE_NAME)
-local media = LibStub("LibSharedMedia-3.0")
-
 --- upvalues to prevent warnings
 local LibStub = LibStub
-local UIParent, CreateFrame, UnitName = UIParent, CreateFrame, UnitName
-local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
-local RegisterUnitWatch = RegisterUnitWatch
-local unpack = unpack
+local UnitName = UnitName
 
-PlayerName.MODULE_NAME = _MODULE_NAME
-PlayerName.bars = nil
-PlayerName._UPDATE_INTERVAL_SECONDS = 0.15
-PlayerName.unit = "player"
+local _MODULE_NAME = "PlayerName47"
+local _DECORATIVE_NAME = "Player Name"
+local PlayerName47 = ZxSimpleUI:NewModule(_MODULE_NAME)
+
+PlayerName47.MODULE_NAME = _MODULE_NAME
+PlayerName47.bars = nil
+PlayerName47.unit = "player"
+-- if 60 FPS, then 1 frame will be refreshed in 16.67 milliseconds.
+local refreshEveryNFrame = 10
+PlayerName47._UPDATE_INTERVAL_SECONDS = 16 * refreshEveryNFrame / 1000.0
 
 local _defaults = {
   profile = {
@@ -34,7 +32,7 @@ local _defaults = {
   }
 }
 
-function PlayerName:OnInitialize()
+function PlayerName47:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   self._curDbProfile = self.db.profile
   self.bars = CoreBarTemplate:new(self._curDbProfile)
@@ -47,39 +45,25 @@ function PlayerName:OnInitialize()
   self:__init__()
 end
 
-function PlayerName:OnEnable()
-  self:createBar()
-  self:refreshConfig()
+function PlayerName47:OnEnable()
 end
 
-function PlayerName:__init__()
+function PlayerName47:__init__()
   self._timeSinceLastUpdate = 0
   self._prevName = UnitName(self.unit)
   self._mainFrame = nil
 end
 
-function PlayerName:createBar()
+---@return table
+function PlayerName47:createBar()
   local percentage = 1.0
-
   self._mainFrame = self.bars:createBar(percentage)
-  -- Set this so Blizzard's internal engine can find `unit`
-  self._mainFrame.unit = self.unit
-  self._mainFrame:SetAttribute("unit", self._mainFrame.unit)
-  -- Handle right click
-  self._mainFrame.menu = function(...)
-    print(...)
-    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
-  end
-
   self.bars:_setTextOnly(self:_getFormattedName())
-  -- Ref: https://wowwiki.fandom.com/wiki/SecureStateDriver
-  -- Register left clicks and right clicks as well
-  -- Do NOT use SetScript("OnClick", func) !
-  RegisterUnitWatch(self._mainFrame, ZxSimpleUI:getUnitWatchState(self._mainFrame.unit))
   self._mainFrame:Show()
+  return self._mainFrame
 end
 
-function PlayerName:refreshConfig()
+function PlayerName47:refreshConfig()
   if self:IsEnabled() then
     self.bars:refreshConfig()
     self._mainFrame:Show()
@@ -93,7 +77,7 @@ end
 -- ####################################
 
 ---@return table
-function PlayerName:_getAppendedEnableOptionTable()
+function PlayerName47:_getAppendedEnableOptionTable()
   local options = self.bars:getOptionTable(_DECORATIVE_NAME)
   options.args["enableButton"] = {
     type = "toggle",
@@ -112,7 +96,7 @@ function PlayerName:_getAppendedEnableOptionTable()
 end
 
 ---@return string formattedName
-function PlayerName:_getFormattedName()
+function PlayerName47:_getFormattedName()
   local name = UnitName(self.unit)
   return Utils:getInitials(name)
 end

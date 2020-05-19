@@ -11,9 +11,11 @@ Utils.lua
 CoreOptionsInterface.lua
 CoreBarTemplate.lua
 
-modules\PlayerHealth.lua
-modules\PlayerName.lua
-modules\PlayerPower.lua
-modules\TargetHealth.lua
-modules\TargetName.lua
-modules\TargetPower.lua
+modules\PlayerHealth47.lua
+modules\PlayerName47.lua
+modules\PlayerPower47.lua
+modules\Player47.lua
+modules\TargetHealth47.lua
+modules\TargetName47.lua
+modules\TargetPower47.lua
+modules\Target47.lua

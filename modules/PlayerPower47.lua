@@ -1,23 +1,20 @@
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
 
-local _MODULE_NAME = "PlayerPower"
-local _DECORATIVE_NAME = "Player Power"
-local PlayerPower = ZxSimpleUI:NewModule(_MODULE_NAME)
-PlayerPower.MODULE_NAME = _MODULE_NAME
-local media = LibStub("LibSharedMedia-3.0")
-
 --- upvalues to prevent warnings
 local LibStub = LibStub
-local UIParent, CreateFrame = UIParent, CreateFrame
 local UnitPower, UnitPowerMax = UnitPower, UnitPowerMax
 local UnitClass, UnitPowerType = UnitClass, UnitPowerType
-local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
-local RegisterUnitWatch = RegisterUnitWatch
-local unpack = unpack
 
-PlayerPower._UPDATE_INTERVAL_SECONDS = 0.15
-PlayerPower.unit = "player"
+local _MODULE_NAME = "PlayerPower47"
+local _DECORATIVE_NAME = "Player Power"
+local PlayerPower47 = ZxSimpleUI:NewModule(_MODULE_NAME)
+PlayerPower47.MODULE_NAME = _MODULE_NAME
+
+PlayerPower47.unit = "player"
+-- if 60 FPS, then 1 frame will be refreshed in 16.67 milliseconds.
+local refreshEveryNFrame = 10
+PlayerPower47._UPDATE_INTERVAL_SECONDS = 16 * refreshEveryNFrame / 1000.0
 
 local _defaults = {
   profile = {
@@ -49,7 +46,7 @@ _unitPowerTypeTable["COMBOPOINTS"] = 4
 _unitPowerTypeTable["RUNES"] = 5
 _unitPowerTypeTable["RUNICPOWER"] = 6
 
-function PlayerPower:OnInitialize()
+function PlayerPower47:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   self._curDbProfile = self.db.profile
   self.bars = CoreBarTemplate:new(self._curDbProfile)
@@ -62,53 +59,37 @@ function PlayerPower:OnInitialize()
   self:__init__()
 end
 
-function PlayerPower:OnEnable()
-  self:_setUnitPowerType()
-  self:_setDefaultColor()
-  self:createBar()
-  self:refreshConfig()
+function PlayerPower47:OnEnable()
 end
 
-function PlayerPower:__init__()
+function PlayerPower47:__init__()
   self._mainFrame = nil
   self._timeSinceLastUpdate = 0
   self._prevPowerValue = UnitPowerMax(self.unit)
   self._playerClass = UnitClass(self.unit)
-  self._playerPower = 0
-  self._playerPowerString = ""
+  self._powerType = 0
+  self._powerTypeString = ""
 end
 
-function PlayerPower:refreshConfig()
+function PlayerPower47:refreshConfig()
   if self:IsEnabled() then self.bars:refreshConfig() end
 end
 
-function PlayerPower:createBar()
+---@return table
+function PlayerPower47:createBar()
+  self:_setUnitPowerType()
+  self:_setDefaultColor()
+
   local curUnitPower = UnitPower(self.unit)
   local maxUnitPower = UnitPowerMax(self.unit)
   local percentage = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
-
   self._mainFrame = self.bars:createBar(percentage)
-  -- Set this so Blizzard's internal engine can find `unit`
-  self._mainFrame.unit = self.unit
-  self._mainFrame:SetAttribute("unit", self._mainFrame.unit)
-  -- Handle right click
-  self._mainFrame.menu = function()
-    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
-  end
 
   self:_registerEvents()
-  self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
-    self:_onUpdateHandler(argsTable, elapsed)
-  end)
-  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
-    self:_onEventHandler(argsTable, event, unit)
-  end)
+  self:_setScriptHandlers()
 
-  -- Ref: https://wowwiki.fandom.com/wiki/SecureStateDriver
-  -- Register left clicks and right clicks as well
-  -- Do NOT use SetScript("OnClick", func) !
-  RegisterUnitWatch(self._mainFrame, ZxSimpleUI:getUnitWatchState(self._mainFrame.unit))
   self._mainFrame:Show()
+  return self._mainFrame
 end
 
 -- ####################################
@@ -117,7 +98,7 @@ end
 
 ---@param argsTable table
 ---@param elapsed number
-function PlayerPower:_onUpdateHandler(argsTable, elapsed)
+function PlayerPower47:_onUpdateHandler(argsTable, elapsed)
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
     local curUnitPower = UnitPower(self.unit)
@@ -132,38 +113,47 @@ end
 ---@param argsTable table
 ---@param event string
 ---@param unit string
-function PlayerPower:_onEventHandler(argsTable, event, unit)
+function PlayerPower47:_onEventHandler(argsTable, event, unit)
   local upperEvent = string.upper(event)
   local upperUnit = string.upper(unit)
   if (upperEvent == "UNIT_DISPLAYPOWER" and upperUnit == self.unit) then self:_handlePowerChanged() end
 end
 
 ---@param curUnitPower number
-function PlayerPower:_setPowerValue(curUnitPower)
+function PlayerPower47:_setPowerValue(curUnitPower)
   curUnitPower = curUnitPower or UnitPower(self.unit)
   local maxUnitPower = UnitPowerMax(self.unit)
   local powerPercent = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
   self.bars:_setStatusBarValue(powerPercent)
 end
 
-function PlayerPower:_handlePowerChanged()
+function PlayerPower47:_handlePowerChanged()
   self:_setUnitPowerType()
   self:_setDefaultColor()
   self:refreshConfig()
 end
 
-function PlayerPower:_registerEvents()
+function PlayerPower47:_registerEvents()
   for powerEvent, _ in pairs(_powerEventColorTable) do self._mainFrame:RegisterEvent(powerEvent) end
   -- Register Druid's shapeshift form
   self._mainFrame:RegisterEvent("UNIT_DISPLAYPOWER")
 end
 
-function PlayerPower:_setUnitPowerType()
-  self._playerPower, self._playerPowerString = UnitPowerType(self.unit)
+function PlayerPower47:_setScriptHandlers()
+  self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
+    self:_onUpdateHandler(argsTable, elapsed)
+  end)
+  self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
+    self:_onEventHandler(argsTable, event, unit)
+  end)
 end
 
-function PlayerPower:_setDefaultColor()
-  local powerTypeUpper = string.upper(self._playerPowerString)
+function PlayerPower47:_setUnitPowerType()
+  self._powerType, self._powerTypeString = UnitPowerType(self.unit)
+end
+
+function PlayerPower47:_setDefaultColor()
+  local powerTypeUpper = string.upper(self._powerTypeString)
   local colorTable = _powerEventColorTable["UNIT_" .. powerTypeUpper]
   _defaults.profile.color = colorTable
   self._curDbProfile.color = colorTable

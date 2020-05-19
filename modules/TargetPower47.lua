@@ -4,22 +4,23 @@
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
 
-local _MODULE_NAME = "TargetPower"
+local _MODULE_NAME = "TargetPower47"
 local _DECORATIVE_NAME = "Target Power"
-local TargetPower = ZxSimpleUI:NewModule(_MODULE_NAME)
+local TargetPower47 = ZxSimpleUI:NewModule(_MODULE_NAME)
 local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
 local LibStub = LibStub
-local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower, UnitPowerMax
+local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower,
+                                                       UnitPowerMax
 local UnitName = UnitName
 local UnitHealth, UnitPowerType = UnitHealth, UnitPowerType
 local ToggleDropDownMenu, TargetFrameDropDown = ToggleDropDownMenu, TargetFrameDropDown
 local unpack = unpack
 
-TargetPower.MODULE_NAME = _MODULE_NAME
-TargetPower.bars = nil
-TargetPower._UPDATE_INTERVAL_SECONDS = 0.15
+TargetPower47.MODULE_NAME = _MODULE_NAME
+TargetPower47.bars = nil
+TargetPower47._UPDATE_INTERVAL_SECONDS = 0.15
 
 local _defaults = {
   profile = {
@@ -32,7 +33,7 @@ local _defaults = {
     fontcolor = {1.0, 1.0, 1.0},
     texture = "Blizzard",
     color = {0.0, 0.0, 1.0, 1.0},
-    border = "None",
+    border = "None"
   }
 }
 
@@ -51,7 +52,7 @@ _unitPowerTypeTable["COMBOPOINTS"] = 4
 _unitPowerTypeTable["RUNES"] = 5
 _unitPowerTypeTable["RUNICPOWER"] = 6
 
-function TargetPower:OnInitialize()
+function TargetPower47:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   self._curDbProfile = self.db.profile
   self.bars = CoreBarTemplate:new(self._curDbProfile)
@@ -61,25 +62,24 @@ function TargetPower:OnInitialize()
   local optionsTable = self.bars:getOptionTable(_DECORATIVE_NAME)
   optionsTable = self:_addShowOption(optionsTable)
   optionsTable.args.color = nil
-  ZxSimpleUI:registerModuleOptions(
-    _MODULE_NAME, optionsTable, _DECORATIVE_NAME)
+  ZxSimpleUI:registerModuleOptions(_MODULE_NAME, optionsTable, _DECORATIVE_NAME)
 
   self:__init__()
 end
 
-function TargetPower:OnEnable()
+function TargetPower47:OnEnable()
   self:_setUnitPowerType()
   self:createBar()
   self:refreshConfig()
 end
 
-function TargetPower:__init__()
+function TargetPower47:__init__()
   self._timeSinceLastUpdate = 0
-  self._prevTargetPower = UnitPowerMax("TARGET")
+  self._prevTargetPower47 = UnitPowerMax("TARGET")
   self._mainFrame = nil
 end
 
-function TargetPower:createBar()
+function TargetPower47:createBar()
   local targetUnitPower = UnitPower("TARGET")
   local targetUnitMaxPower = UnitPowerMax("TARGET")
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitPower, targetUnitMaxPower)
@@ -102,25 +102,21 @@ function TargetPower:createBar()
   self._mainFrame:Hide()
 end
 
-function TargetPower:refreshConfig()
-  if self:IsEnabled() and self._mainFrame:IsVisible() then
-    self.bars:refreshConfig()
-  end
+function TargetPower47:refreshConfig()
+  if self:IsEnabled() and self._mainFrame:IsVisible() then self.bars:refreshConfig() end
 end
 
 -- ####################################
 -- # PRIVATE FUNCTIONS
 -- ####################################
 
-function TargetPower:_registerEvents()
-  for powerEvent, _ in pairs(_powerEventColorTable) do
-    self._mainFrame:RegisterEvent(powerEvent)
-  end
+function TargetPower47:_registerEvents()
+  for powerEvent, _ in pairs(_powerEventColorTable) do self._mainFrame:RegisterEvent(powerEvent) end
   self._mainFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
   self._mainFrame:RegisterEvent("UNIT_DISPLAYPOWER")
 end
 
-function TargetPower:_onEventHandler(argsTable, event, unit)
+function TargetPower47:_onEventHandler(argsTable, event, unit)
   if event == "PLAYER_TARGET_CHANGED" then
     self:_handlePlayerTargetChanged()
   elseif string.upper(unit) == "TARGET" then
@@ -132,7 +128,7 @@ function TargetPower:_onEventHandler(argsTable, event, unit)
   end
 end
 
-function TargetPower:_handlePlayerTargetChanged()
+function TargetPower47:_handlePlayerTargetChanged()
   local targetName = UnitName("TARGET")
   if targetName ~= nil and targetName ~= "" then
     self:_setColorThenShow()
@@ -141,13 +137,13 @@ function TargetPower:_handlePlayerTargetChanged()
   end
 end
 
-function TargetPower:_handlePowerChanged()
+function TargetPower47:_handlePowerChanged()
   self:_setUnitPowerType()
   self:refreshConfig()
   self:_setColorThenShow()
 end
 
-function TargetPower:_handleUnitPowerEvent(curUnitPower)
+function TargetPower47:_handleUnitPowerEvent(curUnitPower)
   local currentHealth = UnitHealth("TARGET")
   if currentHealth > 0 then
     curUnitPower = curUnitPower or UnitPower("TARGET")
@@ -157,26 +153,24 @@ function TargetPower:_handleUnitPowerEvent(curUnitPower)
   end
 end
 
-function TargetPower:_onUpdateHandler(argsTable, elapsed)
+function TargetPower47:_onUpdateHandler(argsTable, elapsed)
   if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
     local curUnitPower = UnitPower("TARGET")
-    if (curUnitPower ~= self._prevTargetPower) then
+    if (curUnitPower ~= self._prevTargetPower47) then
       self:_handleUnitPowerEvent(curUnitPower)
-      self._prevTargetPower = curUnitPower
+      self._prevTargetPower47 = curUnitPower
       self._timeSinceLastUpdate = 0
     end
   end
 end
 
-function TargetPower:_onClickHandler(argsTable, buttonType, isButtonDown)
-  if buttonType == "RightButton" then
-    ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor")
-  end
+function TargetPower47:_onClickHandler(argsTable, buttonType, isButtonDown)
+  if buttonType == "RightButton" then ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor") end
 end
 
-function TargetPower:_addShowOption(optionsTable)
+function TargetPower47:_addShowOption(optionsTable)
   optionsTable.args["show"] = {
     type = "execute",
     name = "Show Bar",
@@ -193,14 +187,13 @@ function TargetPower:_addShowOption(optionsTable)
   return optionsTable
 end
 
-function TargetPower:_setUnitPowerType()
-  self._targetPowerType, self._targetPowerTypeString = UnitPowerType("TARGET")
+function TargetPower47:_setUnitPowerType()
+  self._TargetPower47Type, self._TargetPower47TypeString = UnitPowerType("TARGET")
 end
 
-function TargetPower:_setColorThenShow()
+function TargetPower47:_setColorThenShow()
   self:_setUnitPowerType()
-  local upperType = string.upper(self._targetPowerTypeString)
-  self._mainFrame.statusBar:SetStatusBarColor(
-    unpack(_powerEventColorTable["UNIT_" .. upperType]))
+  local upperType = string.upper(self._TargetPower47TypeString)
+  self._mainFrame.statusBar:SetStatusBarColor(unpack(_powerEventColorTable["UNIT_" .. upperType]))
   self._mainFrame:Show()
 end

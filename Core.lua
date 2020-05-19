@@ -6,21 +6,22 @@ local AceGUI = LibStub("AceGUI-3.0")
 local media = LibStub("LibSharedMedia-3.0")
 media:Register("font", "PT Sans Bold", "Interface\\AddOns\\ZxSimpleUI\\fonts\\PTSansBold.ttf")
 
+--- "PRIVATE" variables
+local _defaults = {
+  profile = {
+    modules = {
+      ["*"] = {enabled = true}
+      -- PlayerName = {enabled = false}
+    }
+  }
+}
+
 --- "CONSTANTS"
 ZxSimpleUI.ADDON_NAME = "ZxSimpleUI"
 ZxSimpleUI.DECORATIVE_NAME = "Zx Simple UI"
 ZxSimpleUI.SCREEN_WIDTH = math.floor(GetScreenWidth())
 ZxSimpleUI.SCREEN_HEIGHT = math.floor(GetScreenHeight())
-
---- "PRIVATE" variables
-local _defaults = {
-  profile = {
-    modules = {
-      ["*"] = {enabled = true},
-      -- PlayerName = {enabled = false}
-    },
-  }
-}
+ZxSimpleUI.DEFAULT_FRAME_LEVEL = 5
 
 ZxSimpleUI.moduleOptionsTable = {}
 ZxSimpleUI.optionFrameTable = {}
@@ -67,9 +68,7 @@ function ZxSimpleUI:refreshConfig()
     end
 
     --- Refresh every module connected to this AddOn
-    if type(curModule.refreshConfig) == "function" then
-      curModule:refreshConfig()
-    end
+    if type(curModule.refreshConfig) == "function" then curModule:refreshConfig() end
   end
 end
 
@@ -78,9 +77,10 @@ end
 ---@param displayName string
 function ZxSimpleUI:registerModuleOptions(name, optTable, displayName)
   self.moduleOptionsTable[name] = optTable
-  self.optionFrameTable[name] = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
-    self.ADDON_NAME, displayName or name, self.DECORATIVE_NAME, name
-  )
+  self.optionFrameTable[name] = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.ADDON_NAME,
+                                                                                displayName or name,
+                                                                                self.DECORATIVE_NAME,
+                                                                                name)
 end
 
 ---@param currentValue number
@@ -102,8 +102,10 @@ function ZxSimpleUI:setModuleEnabledState(module, isEnabled)
   local oldEnabledValue = self.db.profile.modules[module].enabled
   self.db.profile.modules[module].enabled = isEnabled
   if oldEnabledValue ~= isEnabled then
-    if isEnabled then self:EnableModule(module)
-    else self:DisableModule(module)
+    if isEnabled then
+      self:EnableModule(module)
+    else
+      self:DisableModule(module)
     end
   end
 end

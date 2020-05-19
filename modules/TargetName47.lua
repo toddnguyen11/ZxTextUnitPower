@@ -2,9 +2,9 @@ local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
 local Utils = ZxSimpleUI.Utils
 
-local _MODULE_NAME = "TargetName"
+local _MODULE_NAME = "TargetName47"
 local _DECORATIVE_NAME = "Target Name"
-local TargetName = ZxSimpleUI:NewModule(_MODULE_NAME)
+local TargetName47 = ZxSimpleUI:NewModule(_MODULE_NAME)
 local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
@@ -14,9 +14,9 @@ local UnitName, UnitHealth = UnitName, UnitHealth
 local ToggleDropDownMenu, TargetFrameDropDown = ToggleDropDownMenu, TargetFrameDropDown
 local unpack = unpack
 
-TargetName.MODULE_NAME = _MODULE_NAME
-TargetName.bars = nil
-TargetName._UPDATE_INTERVAL_SECONDS = 0.15
+TargetName47.MODULE_NAME = _MODULE_NAME
+TargetName47.bars = nil
+TargetName47._UPDATE_INTERVAL_SECONDS = 0.15
 
 local _defaults = {
   profile = {
@@ -29,35 +29,35 @@ local _defaults = {
     fontcolor = {1.0, 1.0, 1.0},
     texture = "Blizzard",
     color = {0.0, 0.0, 0.0, 1.0},
-    border = "None",
+    border = "None"
   }
 }
 
-function TargetName:OnInitialize()
+function TargetName47:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   self._curDbProfile = self.db.profile
   self.bars = CoreBarTemplate:new(self._curDbProfile)
   self.bars.defaults = _defaults
 
   self:SetEnabledState(ZxSimpleUI:getModuleEnabledState(_MODULE_NAME))
-  ZxSimpleUI:registerModuleOptions(
-    _MODULE_NAME, self:_getAppendedEnableOptionTable(), _DECORATIVE_NAME)
+  ZxSimpleUI:registerModuleOptions(_MODULE_NAME, self:_getAppendedEnableOptionTable(),
+                                   _DECORATIVE_NAME)
 
   self:__init__()
 end
 
-function TargetName:OnEnable()
+function TargetName47:OnEnable()
   self:createBar()
   self:refreshConfig()
 end
 
-function TargetName:__init__()
+function TargetName47:__init__()
   self._timeSinceLastUpdate = 0
   self._prevName = UnitName("TARGET")
   self._mainFrame = nil
 end
 
-function TargetName:createBar()
+function TargetName47:createBar()
   local percentage = 1.0
   self._mainFrame = self.bars:createBar(percentage)
   -- Set this so Blizzard's internal engine can find `unit`
@@ -76,7 +76,7 @@ function TargetName:createBar()
   self._mainFrame:Hide()
 end
 
-function TargetName:refreshConfig()
+function TargetName47:refreshConfig()
   if self:IsEnabled() then
     self:_handlePlayerTargetChanged()
     self.bars:refreshConfig()
@@ -90,34 +90,36 @@ end
 -- ####################################
 
 ---@return table
-function TargetName:_getAppendedEnableOptionTable()
+function TargetName47:_getAppendedEnableOptionTable()
   local options = self.bars:getOptionTable(_DECORATIVE_NAME)
   options.args["enableButton"] = {
-      type = "toggle",
-      name = "Enable",
-      desc = "Enable / Disable Module `" .. _DECORATIVE_NAME .. "`",
-      get = function(info) return ZxSimpleUI:getModuleEnabledState(_MODULE_NAME) end,
-      set = function(info, val)
-        ZxSimpleUI:setModuleEnabledState(_MODULE_NAME, val)
-        self:refreshConfig()
-      end,
-      order = 1
+    type = "toggle",
+    name = "Enable",
+    desc = "Enable / Disable Module `" .. _DECORATIVE_NAME .. "`",
+    get = function(info)
+      return ZxSimpleUI:getModuleEnabledState(_MODULE_NAME)
+    end,
+    set = function(info, val)
+      ZxSimpleUI:setModuleEnabledState(_MODULE_NAME, val)
+      self:refreshConfig()
+    end,
+    order = 1
   }
   return options
 end
 
 ---@return string formattedName
-function TargetName:_getFormattedName()
+function TargetName47:_getFormattedName()
   local name = UnitName("TARGET") or ""
   return Utils:getInitials(name)
 end
 
-function TargetName:_registerEvents()
+function TargetName47:_registerEvents()
   self._mainFrame:RegisterEvent("UNIT_HEALTH")
   self._mainFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 end
 
-function TargetName:_onEventHandler(argsTable, event, unit, ...)
+function TargetName47:_onEventHandler(argsTable, event, unit, ...)
   if event == "UNIT_HEALTH" and string.upper(unit) == "TARGET" then
     self:_handleUnitHealthEvent()
   elseif event == "PLAYER_TARGET_CHANGED" then
@@ -125,13 +127,11 @@ function TargetName:_onEventHandler(argsTable, event, unit, ...)
   end
 end
 
-function TargetName:_onClickHandler(argsTable, buttonType, isButtonDown)
-  if buttonType == "RightButton" then
-    ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor")
-  end
+function TargetName47:_onClickHandler(argsTable, buttonType, isButtonDown)
+  if buttonType == "RightButton" then ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor") end
 end
 
-function TargetName:_handleUnitHealthEvent(curUnitHealth)
+function TargetName47:_handleUnitHealthEvent(curUnitHealth)
   curUnitHealth = curUnitHealth or UnitHealth("TARGET")
   if curUnitHealth > 0 then
     self:_setFormattedName()
@@ -141,9 +141,9 @@ function TargetName:_handleUnitHealthEvent(curUnitHealth)
   end
 end
 
-function TargetName:_handlePlayerTargetChanged()
-  local targetName = UnitName("TARGET")
-  if targetName ~= nil and targetName ~= "" then
+function TargetName47:_handlePlayerTargetChanged()
+  local TargetName47 = UnitName("TARGET")
+  if TargetName47 ~= nil and TargetName47 ~= "" then
     self:_setFormattedName()
     self._mainFrame:Show()
   else
@@ -151,6 +151,6 @@ function TargetName:_handlePlayerTargetChanged()
   end
 end
 
-function TargetName:_setFormattedName()
+function TargetName47:_setFormattedName()
   self._mainFrame.mainText:SetText(self:_getFormattedName())
 end
