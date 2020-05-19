@@ -12,7 +12,7 @@ local media = LibStub("LibSharedMedia-3.0")
 --- upvalues to prevent warnings
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
-local UnitName = UnitName
+local UnitName, MAX_COMBO_POINTS, GetComboPoints = UnitName, MAX_COMBO_POINTS, GetComboPoints
 local unpack = unpack
 
 TargetHealth.MODULE_NAME = _MODULE_NAME
@@ -58,6 +58,8 @@ function TargetHealth:__init__()
   self._timeSinceLastUpdate = 0
   self._prevTargetHealth = UnitHealthMax("TARGET")
   self._mainFrame = nil
+  self._comboPointsTable = {}
+  self._allComboPointsHidden = true
 end
 
 function TargetHealth:createBar()
@@ -66,6 +68,7 @@ function TargetHealth:createBar()
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitHealth, targetUnitMaxHealth)
 
   self._mainFrame = self.bars:createBar(percentage)
+  self:_createComboPointDisplay()
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
@@ -90,6 +93,7 @@ end
 function TargetHealth:_registerEvents()
   self._mainFrame:RegisterEvent("UNIT_HEALTH")
   self._mainFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+  self._mainFrame:RegisterEvent("UNIT_COMBO_POINTS")
 end
 
 function TargetHealth:_onEventHandler(argsTable, event, unit)
@@ -97,12 +101,15 @@ function TargetHealth:_onEventHandler(argsTable, event, unit)
     self:_handlePlayerTargetChanged()
   elseif event == "UNIT_HEALTH" and string.upper(unit) == "TARGET" then
     self:_handleUnitHealthEvent()
+  elseif event == "UNIT_COMBO_POINTS" then
+    self:_handleComboPoints()
   end
 end
 
 function TargetHealth:_handlePlayerTargetChanged()
   local targetName = UnitName("TARGET")
   if targetName ~= nil and targetName ~= "" then
+    self:_handleComboPoints()
     self:_setHealthValue()
     self._mainFrame:Show()
   else
@@ -133,6 +140,19 @@ function TargetHealth:_handleUnitHealthEvent(curUnitHealth)
   end
 end
 
+function TargetHealth:_handleComboPoints()
+  local comboPoints = GetComboPoints("PLAYER", "TARGET")
+  if not self._allComboPointsHidden and comboPoints == 0 then
+    self:_hideAllComboPoints()
+    self._allComboPointsHidden = true
+  else
+    for i = 1, comboPoints do
+      self._comboPointsTable[i]:Show()
+      self._allComboPointsHidden = false
+    end
+  end
+end
+
 function TargetHealth:_addShowOption(optionsTable)
   optionsTable.args["show"] = {
     type = "execute",
@@ -156,5 +176,43 @@ function TargetHealth:_setHealthValue(curUnitHealth)
     local maxUnitHealth = UnitHealthMax("TARGET")
     local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
     self.bars:_setStatusBarValue(healthPercent)
+  end
+end
+
+function TargetHealth:_createComboPointDisplay()
+  local horizGap = 15
+  local totalNumberOfGaps = horizGap * (MAX_COMBO_POINTS - 1)
+  local comboWidth = (self._mainFrame:GetWidth() - totalNumberOfGaps) / MAX_COMBO_POINTS
+  local comboHeight = 8
+  -- Create all MAX_COMBO_POINTS frames
+  for i = 1, MAX_COMBO_POINTS do
+    local parentFrame, anchorDirection = nil, nil
+    local xoffset, yoffset = 0, 0
+    if i == 1 then
+      parentFrame = self._mainFrame
+      anchorDirection = "BOTTOMLEFT"
+      xoffset = 0
+      yoffset = -comboHeight
+    else
+      parentFrame = self._comboPointsTable[i - 1]
+      anchorDirection = "BOTTOMRIGHT"
+      xoffset = horizGap
+      yoffset = 0
+    end
+    local comboTexture = self._mainFrame:CreateTexture(nil, "OVERLAY")
+    comboTexture:ClearAllPoints()
+    comboTexture:SetWidth(comboWidth)
+    comboTexture:SetHeight(comboHeight)
+    comboTexture:SetPoint("BOTTOMLEFT", parentFrame, anchorDirection, xoffset, yoffset)
+    comboTexture:SetTexture(media:Fetch("statusbar", self._curDbProfile.texture))
+    comboTexture:SetVertexColor(1.0, 1.0, 0.0, 1.0)
+    comboTexture:Hide()
+    self._comboPointsTable[i] = comboTexture
+  end
+end
+
+function TargetHealth:_hideAllComboPoints()
+  for i = 1, MAX_COMBO_POINTS do
+    self._comboPointsTable[i]:Hide()
   end
 end
