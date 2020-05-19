@@ -3,6 +3,12 @@ local Utils = {}
 Utils.__index = Utils
 ZxSimpleUI.Utils = Utils
 
+--- References:
+--- Layers: https://wowwiki.fandom.com/wiki/XML/Layer
+Utils.LayerLevel = {
+  "BACKGROUND", "BORDER", "ARTWORK", "OVERLAY", "HIGHLIGHT"
+}
+
 ---@param strInput string
 ---@param sep string
 ---@return table
