@@ -100,6 +100,8 @@ end
 function PlayerHealth:_onClickHandler(argsTable, buttonType, isButtonDown)
   if buttonType == "RightButton" then
     ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
+  elseif buttonType == "LeftButton" then
+
   end
 end
 

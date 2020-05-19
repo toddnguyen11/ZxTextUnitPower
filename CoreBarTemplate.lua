@@ -1,3 +1,6 @@
+---References:
+---https://wowwiki.fandom.com/wiki/SecureActionButtonTemplate
+
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local media = LibStub("LibSharedMedia-3.0")
 
@@ -58,7 +61,9 @@ function CoreBarTemplate:createBar(percentValue)
   )
 
   self._mainFrame:RegisterForClicks("AnyUp")
+  -- Set left click
   self._mainFrame:SetAttribute("*type1", "target")
+  -- Set right click
   self._mainFrame:SetAttribute("*type2", "menu")
 
   self._mainFrame.bgFrame = self._mainFrame:CreateTexture(nil, "BACKGROUND")
