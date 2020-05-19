@@ -9,12 +9,15 @@ local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
 local LibStub = LibStub
-local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower, UnitPowerMax
+local UIParent, CreateFrame = UIParent, CreateFrame
+local UnitPower, UnitPowerMax = UnitPower, UnitPowerMax
 local UnitClass, UnitPowerType = UnitClass, UnitPowerType
 local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
+local RegisterUnitWatch = RegisterUnitWatch
 local unpack = unpack
 
 PlayerPower._UPDATE_INTERVAL_SECONDS = 0.15
+PlayerPower.unit = "player"
 
 local _defaults = {
   profile = {
@@ -46,7 +49,6 @@ _unitPowerTypeTable["COMBOPOINTS"] = 4
 _unitPowerTypeTable["RUNES"] = 5
 _unitPowerTypeTable["RUNICPOWER"] = 6
 
-
 function PlayerPower:OnInitialize()
   self.db = ZxSimpleUI.db:RegisterNamespace(_MODULE_NAME, _defaults)
   self._curDbProfile = self.db.profile
@@ -54,8 +56,8 @@ function PlayerPower:OnInitialize()
   self.bars.defaults = _defaults
 
   self:SetEnabledState(ZxSimpleUI:getModuleEnabledState(_MODULE_NAME))
-  ZxSimpleUI:registerModuleOptions(_MODULE_NAME,
-    self.bars:getOptionTable(_DECORATIVE_NAME), _DECORATIVE_NAME)
+  ZxSimpleUI:registerModuleOptions(_MODULE_NAME, self.bars:getOptionTable(_DECORATIVE_NAME),
+                                   _DECORATIVE_NAME)
 
   self:__init__()
 end
@@ -70,26 +72,29 @@ end
 function PlayerPower:__init__()
   self._mainFrame = nil
   self._timeSinceLastUpdate = 0
-  self._prevPowerValue = UnitPowerMax("PLAYER")
-  self._playerClass = UnitClass("PLAYER")
+  self._prevPowerValue = UnitPowerMax(self.unit)
+  self._playerClass = UnitClass(self.unit)
   self._playerPower = 0
   self._playerPowerString = ""
 end
 
 function PlayerPower:refreshConfig()
-  if self:IsEnabled() then
-    self.bars:refreshConfig()
-  end
+  if self:IsEnabled() then self.bars:refreshConfig() end
 end
 
 function PlayerPower:createBar()
-  local curUnitPower = UnitPower("PLAYER")
-  local maxUnitPower = UnitPowerMax("PLAYER")
+  local curUnitPower = UnitPower(self.unit)
+  local maxUnitPower = UnitPowerMax(self.unit)
   local percentage = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
 
   self._mainFrame = self.bars:createBar(percentage)
   -- Set this so Blizzard's internal engine can find `unit`
-  self._mainFrame.unit = "Player"
+  self._mainFrame.unit = self.unit
+  self._mainFrame:SetAttribute("unit", self._mainFrame.unit)
+  -- Handle right click
+  self._mainFrame.menu = function()
+    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
+  end
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
@@ -98,10 +103,11 @@ function PlayerPower:createBar()
   self._mainFrame:SetScript("OnEvent", function(argsTable, event, unit)
     self:_onEventHandler(argsTable, event, unit)
   end)
-  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
-    self:_onClickHandler(argsTable, buttonType, isButtonDown)
-  end)
 
+  -- Ref: https://wowwiki.fandom.com/wiki/SecureStateDriver
+  -- Register left clicks and right clicks as well
+  -- Do NOT use SetScript("OnClick", func) !
+  RegisterUnitWatch(self._mainFrame, ZxSimpleUI:getUnitWatchState(self._mainFrame.unit))
   self._mainFrame:Show()
 end
 
@@ -114,7 +120,7 @@ end
 function PlayerPower:_onUpdateHandler(argsTable, elapsed)
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
-    local curUnitPower = UnitPower("PLAYER")
+    local curUnitPower = UnitPower(self.unit)
     if (curUnitPower ~= self._prevPowerValue) then
       self:_setPowerValue(curUnitPower)
       self._prevPowerValue = curUnitPower
@@ -129,21 +135,13 @@ end
 function PlayerPower:_onEventHandler(argsTable, event, unit)
   local upperEvent = string.upper(event)
   local upperUnit = string.upper(unit)
-  if (upperEvent == "UNIT_DISPLAYPOWER" and upperUnit == "PLAYER") then
-    self:_handlePowerChanged()
-  end
-end
-
-function PlayerPower:_onClickHandler(argsTable, buttonType, isButtonDown)
-  if buttonType == "RightButton" then
-    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
-  end
+  if (upperEvent == "UNIT_DISPLAYPOWER" and upperUnit == self.unit) then self:_handlePowerChanged() end
 end
 
 ---@param curUnitPower number
 function PlayerPower:_setPowerValue(curUnitPower)
-  curUnitPower = curUnitPower or UnitPower("PLAYER")
-  local maxUnitPower = UnitPowerMax("PLAYER")
+  curUnitPower = curUnitPower or UnitPower(self.unit)
+  local maxUnitPower = UnitPowerMax(self.unit)
   local powerPercent = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
   self.bars:_setStatusBarValue(powerPercent)
 end
@@ -155,15 +153,13 @@ function PlayerPower:_handlePowerChanged()
 end
 
 function PlayerPower:_registerEvents()
-  for powerEvent, _ in pairs(_powerEventColorTable) do
-    self._mainFrame:RegisterEvent(powerEvent)
-  end
+  for powerEvent, _ in pairs(_powerEventColorTable) do self._mainFrame:RegisterEvent(powerEvent) end
   -- Register Druid's shapeshift form
   self._mainFrame:RegisterEvent("UNIT_DISPLAYPOWER")
 end
 
 function PlayerPower:_setUnitPowerType()
-  self._playerPower, self._playerPowerString = UnitPowerType("PLAYER")
+  self._playerPower, self._playerPowerString = UnitPowerType(self.unit)
 end
 
 function PlayerPower:_setDefaultColor()

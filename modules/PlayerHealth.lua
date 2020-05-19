@@ -8,14 +8,16 @@ local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
 local LibStub = LibStub
-local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth, UnitHealthMax
-local UnitName = UnitName
+local UIParent, CreateFrame = UIParent, CreateFrame
+local UnitHealth, UnitHealthMax = UnitHealth, UnitHealthMax
+local UnitName, RegisterUnitWatch = UnitName, RegisterUnitWatch
 local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
 local unpack = unpack
 
 PlayerHealth.MODULE_NAME = _MODULE_NAME
 PlayerHealth.bars = nil
 PlayerHealth._UPDATE_INTERVAL_SECONDS = 0.15
+PlayerHealth.unit = "player"
 
 local _defaults = {
   profile = {
@@ -28,7 +30,7 @@ local _defaults = {
     fontcolor = {1.0, 1.0, 1.0},
     texture = "Blizzard",
     color = {0.0, 1.0, 0.0, 1.0},
-    border = "None",
+    border = "None"
   }
 }
 
@@ -39,8 +41,8 @@ function PlayerHealth:OnInitialize()
   self.bars.defaults = _defaults
 
   self:SetEnabledState(ZxSimpleUI:getModuleEnabledState(_MODULE_NAME))
-  ZxSimpleUI:registerModuleOptions(
-    _MODULE_NAME, self.bars:getOptionTable(_DECORATIVE_NAME), _DECORATIVE_NAME)
+  ZxSimpleUI:registerModuleOptions(_MODULE_NAME, self.bars:getOptionTable(_DECORATIVE_NAME),
+                                   _DECORATIVE_NAME)
 
   self:__init__()
 end
@@ -52,34 +54,39 @@ end
 
 function PlayerHealth:__init__()
   self._timeSinceLastUpdate = 0
-  self._prevHealth = UnitHealthMax("PLAYER")
+  self._prevHealth = UnitHealthMax(self.unit)
   self._mainFrame = nil
 end
 
 function PlayerHealth:refreshConfig()
-  if self:IsEnabled() then
-    self.bars:refreshConfig()
-  end
+  if self:IsEnabled() then self.bars:refreshConfig() end
 end
 
 function PlayerHealth:createBar()
-  local curUnitHealth = UnitHealth("Player")
-  local maxUnitHealth = UnitHealthMax("Player")
+  local curUnitHealth = UnitHealth(self.unit)
+  local maxUnitHealth = UnitHealthMax(self.unit)
   local percentage = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
 
   self._mainFrame = self.bars:createBar(percentage)
   -- Set this so Blizzard's internal engine can find `unit`
-  self._mainFrame.unit = "Player"
+  -- Also help RegisterUnitWatch
+  self._mainFrame.unit = self.unit
+  self._mainFrame:SetAttribute("unit", self._mainFrame.unit)
+  -- Handle right click
+  self._mainFrame.menu = function()
+    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
+  end
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
     self:_onUpdateHandler(argsTable, elapsed)
   end)
-  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
-    self:_onClickHandler(argsTable, buttonType, isButtonDown)
-  end)
 
   ZxSimpleUI:enableTooltip(self._mainFrame)
+  -- Ref: https://wowwiki.fandom.com/wiki/SecureStateDriver
+  -- Register left clicks and right clicks as well
+  -- Do NOT use SetScript("OnClick", func) !
+  RegisterUnitWatch(self._mainFrame, ZxSimpleUI:getUnitWatchState(self._mainFrame.unit))
   self._mainFrame:Show()
 end
 
@@ -92,7 +99,7 @@ end
 function PlayerHealth:_onUpdateHandler(argsTable, elapsed)
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > self._UPDATE_INTERVAL_SECONDS) then
-    local curUnitHealth = UnitHealth("Player")
+    local curUnitHealth = UnitHealth(self.unit)
     if (curUnitHealth ~= self._prevHealth) then
       self:_handleUnitHealthEvent(curUnitHealth)
       self._prevHealth = curUnitHealth
@@ -109,8 +116,8 @@ function PlayerHealth:_onClickHandler(argsTable, buttonType, isButtonDown)
 end
 
 function PlayerHealth:_handleUnitHealthEvent(curUnitHealth)
-  curUnitHealth = curUnitHealth or UnitHealth("Player")
-  local maxUnitHealth = UnitHealthMax("Player")
+  curUnitHealth = curUnitHealth or UnitHealth(self.unit)
+  local maxUnitHealth = UnitHealthMax(self.unit)
   local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
   self.bars:_setStatusBarValue(healthPercent)
 end

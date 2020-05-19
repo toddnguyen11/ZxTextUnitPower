@@ -60,11 +60,7 @@ function CoreBarTemplate:createBar(percentValue)
     self._curDbProfile.positiony
   )
 
-  self._mainFrame:RegisterForClicks("AnyUp")
-  -- Set left click
-  self._mainFrame:SetAttribute("*type1", "target")
-  -- Set right click
-  self._mainFrame:SetAttribute("*type2", "menu")
+  self:_setMouseClicks()
 
   self._mainFrame.bgFrame = self._mainFrame:CreateTexture(nil, "BACKGROUND")
   self._mainFrame.bgFrame:SetTexture(0, 0, 0, 0.8)
@@ -321,4 +317,12 @@ end
 ---@param strInput string
 function CoreBarTemplate:_setTextOnly(strInput)
   self._mainFrame.mainText:SetText(strInput)
+end
+
+function CoreBarTemplate:_setMouseClicks()
+  self._mainFrame:RegisterForClicks("AnyUp")
+  -- Set left click
+  self._mainFrame:SetAttribute("*type1", "target")
+  -- Set right click
+  self._mainFrame:SetAttribute("*type2", "menu")
 end

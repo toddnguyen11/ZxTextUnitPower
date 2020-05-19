@@ -113,3 +113,10 @@ function ZxSimpleUI:enableTooltip(currentFrame)
   currentFrame:SetScript("OnEnter", UnitFrame_OnEnter)
   currentFrame:SetScript("OnLeave", UnitFrame_OnLeave)
 end
+
+---@param unit string
+---@return boolean
+---Ref: https://wowwiki.fandom.com/wiki/SecureStateDriver
+function ZxSimpleUI:getUnitWatchState(unit)
+  return unit == "pet"
+end

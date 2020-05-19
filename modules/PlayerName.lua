@@ -11,11 +11,13 @@ local media = LibStub("LibSharedMedia-3.0")
 local LibStub = LibStub
 local UIParent, CreateFrame, UnitName = UIParent, CreateFrame, UnitName
 local ToggleDropDownMenu, PlayerFrameDropDown = ToggleDropDownMenu, PlayerFrameDropDown
+local RegisterUnitWatch = RegisterUnitWatch
 local unpack = unpack
 
 PlayerName.MODULE_NAME = _MODULE_NAME
 PlayerName.bars = nil
 PlayerName._UPDATE_INTERVAL_SECONDS = 0.15
+PlayerName.unit = "player"
 
 local _defaults = {
   profile = {
@@ -28,7 +30,7 @@ local _defaults = {
     fontcolor = {1.0, 1.0, 1.0},
     texture = "Blizzard",
     color = {0.0, 0.0, 0.0, 1.0},
-    border = "None",
+    border = "None"
   }
 }
 
@@ -39,8 +41,8 @@ function PlayerName:OnInitialize()
   self.bars.defaults = _defaults
 
   self:SetEnabledState(ZxSimpleUI:getModuleEnabledState(_MODULE_NAME))
-  ZxSimpleUI:registerModuleOptions(
-    _MODULE_NAME, self:_getAppendedEnableOptionTable(), _DECORATIVE_NAME)
+  ZxSimpleUI:registerModuleOptions(_MODULE_NAME, self:_getAppendedEnableOptionTable(),
+                                   _DECORATIVE_NAME)
 
   self:__init__()
 end
@@ -52,7 +54,7 @@ end
 
 function PlayerName:__init__()
   self._timeSinceLastUpdate = 0
-  self._prevName = UnitName("PLAYER")
+  self._prevName = UnitName(self.unit)
   self._mainFrame = nil
 end
 
@@ -61,14 +63,19 @@ function PlayerName:createBar()
 
   self._mainFrame = self.bars:createBar(percentage)
   -- Set this so Blizzard's internal engine can find `unit`
-  self._mainFrame.unit = "Player"
+  self._mainFrame.unit = self.unit
+  self._mainFrame:SetAttribute("unit", self._mainFrame.unit)
+  -- Handle right click
+  self._mainFrame.menu = function(...)
+    print(...)
+    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
+  end
 
   self.bars:_setTextOnly(self:_getFormattedName())
-
-  self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
-    self:_onClickHandler(argsTable, buttonType, isButtonDown)
-  end)
-
+  -- Ref: https://wowwiki.fandom.com/wiki/SecureStateDriver
+  -- Register left clicks and right clicks as well
+  -- Do NOT use SetScript("OnClick", func) !
+  RegisterUnitWatch(self._mainFrame, ZxSimpleUI:getUnitWatchState(self._mainFrame.unit))
   self._mainFrame:Show()
 end
 
@@ -89,27 +96,23 @@ end
 function PlayerName:_getAppendedEnableOptionTable()
   local options = self.bars:getOptionTable(_DECORATIVE_NAME)
   options.args["enableButton"] = {
-      type = "toggle",
-      name = "Enable",
-      desc = "Enable / Disable Module `" .. _DECORATIVE_NAME .. "`",
-      get = function(info) return ZxSimpleUI:getModuleEnabledState(_MODULE_NAME) end,
-      set = function(info, val)
-        ZxSimpleUI:setModuleEnabledState(_MODULE_NAME, val)
-        self:refreshConfig()
-      end,
-      order = 1
+    type = "toggle",
+    name = "Enable",
+    desc = "Enable / Disable Module `" .. _DECORATIVE_NAME .. "`",
+    get = function(info)
+      return ZxSimpleUI:getModuleEnabledState(_MODULE_NAME)
+    end,
+    set = function(info, val)
+      ZxSimpleUI:setModuleEnabledState(_MODULE_NAME, val)
+      self:refreshConfig()
+    end,
+    order = 1
   }
   return options
 end
 
-function PlayerName:_onClickHandler(argsTable, buttonType, isButtonDown)
-  if buttonType == "RightButton" then
-    ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
-  end
-end
-
 ---@return string formattedName
 function PlayerName:_getFormattedName()
-  local name = UnitName("PLAYER")
+  local name = UnitName(self.unit)
   return Utils:getInitials(name)
 end
