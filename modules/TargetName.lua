@@ -20,7 +20,7 @@ TargetName._UPDATE_INTERVAL_SECONDS = 0.15
 local _defaults = {
   profile = {
     width = 200,
-    height = 20,
+    height = 26,
     positionx = 700,
     positiony = 300,
     fontsize = 12,
@@ -70,6 +70,7 @@ end
 
 function TargetName:refreshConfig()
   if self:IsEnabled() then
+    self:_handlePlayerTargetChanged()
     self.bars:refreshConfig()
   elseif not self:IsEnabled() then
     self._mainFrame:Hide()
