@@ -51,7 +51,7 @@ end
 ---@return table
 function CoreBarTemplate:createBar(percentValue)
   -- self._mainFrame = CreateFrame("Frame", nil, UIParent)
-  self._mainFrame = CreateFrame("Button", nil, UIParent)
+  self._mainFrame = CreateFrame("Button", nil, UIParent, "SecureUnitButtonTemplate")
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
   self._mainFrame:SetBackdropColor(1, 0, 0, 1)
   self._mainFrame:SetPoint(

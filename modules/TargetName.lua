@@ -60,6 +60,9 @@ end
 function TargetName:createBar()
   local percentage = 1.0
   self._mainFrame = self.bars:createBar(percentage)
+  -- Set this so Blizzard's internal engine can find `unit`
+  self._mainFrame.unit = "Target"
+
   self:_setFormattedName()
 
   self:_registerEvents()

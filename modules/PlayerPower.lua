@@ -88,6 +88,8 @@ function PlayerPower:createBar()
   local percentage = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
 
   self._mainFrame = self.bars:createBar(percentage)
+  -- Set this so Blizzard's internal engine can find `unit`
+  self._mainFrame.unit = "Player"
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)

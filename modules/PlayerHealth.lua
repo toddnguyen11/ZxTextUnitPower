@@ -68,6 +68,8 @@ function PlayerHealth:createBar()
   local percentage = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
 
   self._mainFrame = self.bars:createBar(percentage)
+  -- Set this so Blizzard's internal engine can find `unit`
+  self._mainFrame.unit = "Player"
 
   self:_registerEvents()
   self._mainFrame:SetScript("OnUpdate", function(argsTable, elapsed)
@@ -76,6 +78,8 @@ function PlayerHealth:createBar()
   self._mainFrame:SetScript("OnClick", function(argsTable, buttonType, isButtonDown)
     self:_onClickHandler(argsTable, buttonType, isButtonDown)
   end)
+
+  ZxSimpleUI:enableTooltip(self._mainFrame)
   self._mainFrame:Show()
 end
 
@@ -101,7 +105,6 @@ function PlayerHealth:_onClickHandler(argsTable, buttonType, isButtonDown)
   if buttonType == "RightButton" then
     ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor")
   elseif buttonType == "LeftButton" then
-
   end
 end
 

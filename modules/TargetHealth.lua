@@ -74,6 +74,8 @@ function TargetHealth:createBar()
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitHealth, targetUnitMaxHealth)
 
   self._mainFrame = self.bars:createBar(percentage)
+  -- Set this so Blizzard's internal engine can find `unit`
+  self._mainFrame.unit = "Target"
   self:_createComboPointDisplay()
 
   self:_registerEvents()
@@ -87,6 +89,7 @@ function TargetHealth:createBar()
     self:_onClickHandler(argsTable, buttonType, isButtonDown)
   end)
 
+  ZxSimpleUI:enableTooltip(self._mainFrame)
   self._mainFrame:Hide()
 end
 

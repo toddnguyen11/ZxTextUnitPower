@@ -107,3 +107,9 @@ function ZxSimpleUI:setModuleEnabledState(module, isEnabled)
     end
   end
 end
+
+---@param currentFrame table
+function ZxSimpleUI:enableTooltip(currentFrame)
+  currentFrame:SetScript("OnEnter", UnitFrame_OnEnter)
+  currentFrame:SetScript("OnLeave", UnitFrame_OnLeave)
+end
