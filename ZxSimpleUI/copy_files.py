@@ -20,7 +20,8 @@ class CopyAddonFiles:
         with open(config_file, "r") as file:
             data = json.load(file)
         self.src = data["src"]
-        self.dest = data["dest"] + addon_name
+        self.dest = data["dest"]
+        self.dest = os.path.join(self.dest, addon_name)
 
     def execute(self):
         for root, dirs, files in os.walk(self.src):
@@ -43,7 +44,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         arg1 = sys.argv[1]
         if arg1 == "--remove-dest":
-            print("Removing {0}".format(copy_addon_file.dest.replace("\\", "/")))
-            shutil.rmtree(copy_addon_file.dest)
+            if os.path.isdir(copy_addon_file.dest):
+                print("Removing {0}".format(copy_addon_file.dest.replace("\\", "/")))
+                shutil.rmtree(copy_addon_file.dest)
 
     copy_addon_file.execute()
