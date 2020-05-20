@@ -8,3 +8,5 @@
 # Exclude these files
 *.jpg binary
 *.png binary
+*.ttf binary
+*.otf binary
