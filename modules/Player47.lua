@@ -15,11 +15,11 @@ Player47.unit = "player"
 
 function Player47:OnInitialize()
   self:__init__()
-  self:_createBars()
-  self:_setRegisterForWatch()
 end
 
 function Player47:OnEnable()
+  self:_createBars()
+  self:_setRegisterForWatch()
 end
 
 function Player47:__init__()

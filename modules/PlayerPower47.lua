@@ -1,5 +1,6 @@
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
+local Utils47 = ZxSimpleUI.Utils47
 
 --- upvalues to prevent warnings
 local LibStub = LibStub
@@ -111,9 +112,9 @@ end
 ---@param event string
 ---@param unit string
 function PlayerPower47:_onEventHandler(argsTable, event, unit)
-  local upperEvent = string.upper(event)
-  local upperUnit = string.upper(unit)
-  if (upperEvent == "UNIT_DISPLAYPOWER" and upperUnit == self.unit) then self:_handlePowerChanged() end
+  local isSameEvent = Utils47:stringEqualsIgnoreCase(event, "UNIT_DISPLAYPOWER")
+  local isSameUnit = Utils47:stringEqualsIgnoreCase(unit, self.unit)
+  if isSameEvent and isSameUnit then self:_handlePowerChanged() end
 end
 
 ---@param curUnitPower number
@@ -131,7 +132,9 @@ function PlayerPower47:_handlePowerChanged()
 end
 
 function PlayerPower47:_registerEvents()
-  for powerEvent, _ in pairs(_powerEventColorTable) do self._mainFrame:RegisterEvent(powerEvent) end
+  for powerEvent, _ in pairs(_powerEventColorTable) do
+    self._mainFrame:RegisterEvent(powerEvent)
+  end
   -- Register Druid's shapeshift form
   self._mainFrame:RegisterEvent("UNIT_DISPLAYPOWER")
 end

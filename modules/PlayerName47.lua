@@ -1,6 +1,6 @@
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
-local Utils = ZxSimpleUI.Utils
+local Utils47 = ZxSimpleUI.Utils47
 
 --- upvalues to prevent warnings
 local LibStub = LibStub
@@ -95,5 +95,5 @@ end
 ---@return string formattedName
 function PlayerName47:_getFormattedName()
   local name = UnitName(self.unit)
-  return Utils:getInitials(name)
+  return Utils47:getInitials(name)
 end

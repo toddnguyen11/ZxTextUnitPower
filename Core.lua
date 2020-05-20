@@ -1,4 +1,5 @@
-local ZxSimpleUI = LibStub("AceAddon-3.0"):NewAddon("ZxSimpleUI", "AceConsole-3.0", "AceEvent-3.0")
+local ZxSimpleUI = LibStub("AceAddon-3.0"):NewAddon("ZxSimpleUI", "AceConsole-3.0",
+                                                    "AceEvent-3.0")
 local AceConfig = LibStub("AceConfig-3.0")
 local AceGUI = LibStub("AceGUI-3.0")
 
@@ -80,10 +81,9 @@ end
 ---@param displayName string
 function ZxSimpleUI:registerModuleOptions(name, optTable, displayName)
   self.moduleOptionsTable[name] = optTable
-  self.optionFrameTable[name] = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(self.ADDON_NAME,
-                                                                                displayName or name,
-                                                                                self.DECORATIVE_NAME,
-                                                                                name)
+  self.optionFrameTable[name] = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
+                                  self.ADDON_NAME, displayName or name, self.DECORATIVE_NAME,
+                                  name)
 end
 
 ---@param currentValue number
@@ -123,5 +123,5 @@ end
 ---@return boolean
 ---Ref: https://wowwiki.fandom.com/wiki/SecureStateDriver
 function ZxSimpleUI:getUnitWatchState(unit)
-  return unit == "pet"
+  return string.lower(unit) == "pet"
 end
