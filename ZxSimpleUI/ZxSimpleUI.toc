@@ -1,0 +1,21 @@
+## Interface: 30300
+## Title: ZxSimpleUI
+## Author: ZxScepter
+## Notes: Display power as a text
+## Version: 0.1
+## SavedVariables: ZxSimpleUI_DB
+
+embeds.xml
+Core.lua
+Utils47.lua
+CoreOptionsInterface.lua
+CoreBarTemplate.lua
+
+modules\PlayerHealth47.lua
+modules\PlayerName47.lua
+modules\PlayerPower47.lua
+modules\Player47.lua
+modules\TargetHealth47.lua
+modules\TargetName47.lua
+modules\TargetPower47.lua
+modules\Target47.lua
