@@ -1,7 +1,0 @@
-## Interface: 30300
-## Title: ZxTextUnitPower
-## Author: ZxScepter
-## Notes: Display power as a text
-
-ZxTextUnitPower.xml
-ZxTextUnitPowerCore.lua
