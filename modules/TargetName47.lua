@@ -1,6 +1,6 @@
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
-local Utils = ZxSimpleUI.Utils
+local Utils47 = ZxSimpleUI.Utils47
 
 local _MODULE_NAME = "TargetName47"
 local _DECORATIVE_NAME = "Target Name"
@@ -102,7 +102,7 @@ end
 ---@return string formattedName
 function TargetName47:_getFormattedName()
   local name = UnitName("TARGET") or ""
-  return Utils:getInitials(name)
+  return Utils47:getInitials(name)
 end
 
 function TargetName47:_registerEvents()
@@ -117,9 +117,11 @@ function TargetName47:_setScriptHandlers()
 end
 
 function TargetName47:_onEventHandler(argsTable, event, unit, ...)
-  if event == "UNIT_HEALTH" and string.upper(unit) == "TARGET" then
+  local isSameEvent = Utils47:stringEqualsIgnoreCase(event, "UNIT_HEALTH")
+  local isSameUnit = Utils47:stringEqualsIgnoreCase(unit, self.unit)
+  if isSameEvent and isSameUnit then
     self:_handleUnitHealthEvent()
-  elseif event == "PLAYER_TARGET_CHANGED" then
+  elseif Utils47:stringEqualsIgnoreCase(event, "PLAYER_TARGET_CHANGED") then
     self:_handlePlayerTargetChanged()
   end
 end

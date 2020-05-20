@@ -3,6 +3,7 @@
 -- 2. Being attacked
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
+local Utils47 = ZxSimpleUI.Utils47
 
 local _MODULE_NAME = "TargetHealth47"
 local _DECORATIVE_NAME = "Target Health"
@@ -11,14 +12,13 @@ local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
 local LibStub = LibStub
-local UIParent, CreateFrame, UnitHealth, UnitHealthMax = UIParent, CreateFrame, UnitHealth,
-                                                         UnitHealthMax
+local CreateFrame, UnitHealth, UnitHealthMax = CreateFrame, UnitHealth, UnitHealthMax
 local UnitName, MAX_COMBO_POINTS, GetComboPoints = UnitName, MAX_COMBO_POINTS, GetComboPoints
-local ToggleDropDownMenu, TargetFrameDropDown = ToggleDropDownMenu, TargetFrameDropDown
 local unpack = unpack
 
 TargetHealth47.MODULE_NAME = _MODULE_NAME
 TargetHealth47.bars = nil
+TargetHealth47.unit = "target"
 
 local _defaults = {
   profile = {
@@ -54,7 +54,7 @@ end
 
 function TargetHealth47:__init__()
   self._timeSinceLastUpdate = 0
-  self._prevTargetHealth47 = UnitHealthMax("TARGET")
+  self._prevTargetHealth47 = UnitHealthMax(self.unit)
   self._mainFrame = nil
   self._comboPointsTable = {}
   self._allComboPointsHidden = true
@@ -66,8 +66,8 @@ function TargetHealth47:__init__()
 end
 
 function TargetHealth47:createBar()
-  local targetUnitHealth = UnitHealth("TARGET")
-  local targetUnitMaxHealth = UnitHealthMax("TARGET")
+  local targetUnitHealth = UnitHealth(self.unit)
+  local targetUnitMaxHealth = UnitHealthMax(self.unit)
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitHealth, targetUnitMaxHealth)
 
   self._mainFrame = self.bars:createBar(percentage)
@@ -104,23 +104,21 @@ function TargetHealth47:_setScriptHandlers()
 end
 
 function TargetHealth47:_onEventHandler(argsTable, event, unit)
-  if event == "PLAYER_TARGET_CHANGED" then
+  if Utils47:stringEqualsIgnoreCase(event, "PLAYER_TARGET_CHANGED") then
     self:_handlePlayerTargetChanged()
-  elseif event == "UNIT_HEALTH" and string.upper(unit) == "TARGET" then
+  elseif Utils47:stringEqualsIgnoreCase(event, "UNIT_HEALTH") and
+    Utils47:stringEqualsIgnoreCase(unit, self.unit) then
     self:_handleUnitHealthEvent()
-  elseif event == "UNIT_COMBO_POINTS" then
+  elseif Utils47:stringEqualsIgnoreCase(event, "UNIT_COMBO_POINTS") then
     self:_handleComboPoints()
   end
 end
 
 function TargetHealth47:_handlePlayerTargetChanged()
-  local targetName = UnitName("TARGET")
+  local targetName = UnitName(self.unit)
   if targetName ~= nil and targetName ~= "" then
     self:_handleComboPoints()
     self:_setHealthValue()
-    self._mainFrame:Show()
-  else
-    self._mainFrame:Hide()
   end
 end
 
@@ -128,7 +126,7 @@ function TargetHealth47:_onUpdateHandler(argsTable, elapsed)
   if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > ZxSimpleUI.UPDATE_INTERVAL_SECONDS) then
-    local curUnitHealth = UnitHealth("TARGET")
+    local curUnitHealth = UnitHealth(self.unit)
     if (curUnitHealth ~= self._prevTargetHealth47) then
       self:_handleUnitHealthEvent(curUnitHealth)
       self._prevTargetHealth47 = curUnitHealth
@@ -138,12 +136,12 @@ function TargetHealth47:_onUpdateHandler(argsTable, elapsed)
 end
 
 function TargetHealth47:_handleUnitHealthEvent(curUnitHealth)
-  curUnitHealth = curUnitHealth or UnitHealth("TARGET")
+  curUnitHealth = curUnitHealth or UnitHealth(self.unit)
   self:_setHealthValue(curUnitHealth)
 end
 
 function TargetHealth47:_handleComboPoints()
-  local comboPoints = GetComboPoints("PLAYER", "TARGET")
+  local comboPoints = GetComboPoints("PLAYER", self.unit)
   if not self._allComboPointsHidden and comboPoints == 0 then
     self:_hideAllComboPoints()
     self._allComboPointsHidden = true
@@ -175,12 +173,10 @@ function TargetHealth47:_addShowOption(optionsTable)
 end
 
 function TargetHealth47:_setHealthValue(curUnitHealth)
-  curUnitHealth = curUnitHealth or UnitHealth("TARGET")
-  if curUnitHealth > 0 then
-    local maxUnitHealth = UnitHealthMax("TARGET")
-    local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
-    self.bars:_setStatusBarValue(healthPercent)
-  end
+  curUnitHealth = curUnitHealth or UnitHealth(self.unit)
+  local maxUnitHealth = UnitHealthMax(self.unit)
+  local healthPercent = ZxSimpleUI:calcPercentSafely(curUnitHealth, maxUnitHealth)
+  self.bars:_setStatusBarValue(healthPercent)
 end
 
 function TargetHealth47:_createComboPointDisplay()

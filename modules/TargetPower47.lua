@@ -3,6 +3,7 @@
 -- 2. Being attacked
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local CoreBarTemplate = ZxSimpleUI.CoreBarTemplate
+local Utils47 = ZxSimpleUI.Utils47
 
 local _MODULE_NAME = "TargetPower47"
 local _DECORATIVE_NAME = "Target Power"
@@ -11,8 +12,8 @@ local media = LibStub("LibSharedMedia-3.0")
 
 --- upvalues to prevent warnings
 local LibStub = LibStub
-local UIParent, CreateFrame, UnitPower, UnitPowerMax = UIParent, CreateFrame, UnitPower,
-                                                       UnitPowerMax
+local UIParent, CreateFrame = UIParent, CreateFrame
+local UnitPower, UnitPowerMax = UnitPower, UnitPowerMax
 local UnitName = UnitName
 local UnitHealth, UnitPowerType = UnitHealth, UnitPowerType
 local ToggleDropDownMenu, TargetFrameDropDown = ToggleDropDownMenu, TargetFrameDropDown
@@ -20,6 +21,7 @@ local unpack = unpack
 
 TargetPower47.MODULE_NAME = _MODULE_NAME
 TargetPower47.bars = nil
+TargetPower47.unit = "target"
 
 local _defaults = {
   profile = {
@@ -71,14 +73,15 @@ end
 
 function TargetPower47:__init__()
   self._timeSinceLastUpdate = 0
-  self._prevTargetPower47 = UnitPowerMax("TARGET")
+  self._prevTargetPower47 = UnitPowerMax(self.unit)
   self._mainFrame = nil
+  self._powerType, self._powerTypeString = nil, nil
 end
 
 function TargetPower47:createBar()
   self:_setUnitPowerType()
-  local targetUnitPower = UnitPower("TARGET")
-  local targetUnitMaxPower = UnitPowerMax("TARGET")
+  local targetUnitPower = UnitPower(self.unit)
+  local targetUnitMaxPower = UnitPowerMax(self.unit)
   local percentage = ZxSimpleUI:calcPercentSafely(targetUnitPower, targetUnitMaxPower)
   self._mainFrame = self.bars:createBar(percentage)
 
@@ -98,7 +101,9 @@ end
 -- ####################################
 
 function TargetPower47:_registerEvents()
-  for powerEvent, _ in pairs(_powerEventColorTable) do self._mainFrame:RegisterEvent(powerEvent) end
+  for powerEvent, _ in pairs(_powerEventColorTable) do
+    self._mainFrame:RegisterEvent(powerEvent)
+  end
   self._mainFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
   self._mainFrame:RegisterEvent("UNIT_DISPLAYPOWER")
 end
@@ -113,10 +118,10 @@ function TargetPower47:_setScriptHandlers()
 end
 
 function TargetPower47:_onEventHandler(argsTable, event, unit)
-  if event == "PLAYER_TARGET_CHANGED" then
+  if Utils47:stringEqualsIgnoreCase(event, "PLAYER_TARGET_CHANGED") then
     self:_handlePlayerTargetChanged()
-  elseif string.upper(unit) == "TARGET" then
-    if event == "UNIT_DISPLAYPOWER" then
+  elseif Utils47:stringEqualsIgnoreCase(unit, self.unit) then
+    if Utils47:stringEqualsIgnoreCase(event, "UNIT_DISPLAYPOWER") then
       self:_handlePowerChanged()
     elseif _powerEventColorTable[event] ~= nil then
       self:_handleUnitPowerEvent()
@@ -125,25 +130,21 @@ function TargetPower47:_onEventHandler(argsTable, event, unit)
 end
 
 function TargetPower47:_handlePlayerTargetChanged()
-  local targetName = UnitName("TARGET")
-  if targetName ~= nil and targetName ~= "" then
-    self:_setColorThenShow()
-  else
-    self._mainFrame:Hide()
-  end
+  local targetName = UnitName(self.unit)
+  if targetName ~= nil and targetName ~= "" then self:_setColor() end
 end
 
 function TargetPower47:_handlePowerChanged()
   self:_setUnitPowerType()
   self:refreshConfig()
-  self:_setColorThenShow()
+  self:_setColor()
 end
 
 function TargetPower47:_handleUnitPowerEvent(curUnitPower)
-  local currentHealth = UnitHealth("TARGET")
+  local currentHealth = UnitHealth(self.unit)
   if currentHealth > 0 then
-    curUnitPower = curUnitPower or UnitPower("TARGET")
-    local maxUnitPower = UnitPowerMax("TARGET")
+    curUnitPower = curUnitPower or UnitPower(self.unit)
+    local maxUnitPower = UnitPowerMax(self.unit)
     local powerPercent = ZxSimpleUI:calcPercentSafely(curUnitPower, maxUnitPower)
     self.bars:_setStatusBarValue(powerPercent)
   end
@@ -153,17 +154,13 @@ function TargetPower47:_onUpdateHandler(argsTable, elapsed)
   if not self._mainFrame:IsVisible() then return end
   self._timeSinceLastUpdate = self._timeSinceLastUpdate + elapsed
   if (self._timeSinceLastUpdate > ZxSimpleUI.UPDATE_INTERVAL_SECONDS) then
-    local curUnitPower = UnitPower("TARGET")
+    local curUnitPower = UnitPower(self.unit)
     if (curUnitPower ~= self._prevTargetPower47) then
       self:_handleUnitPowerEvent(curUnitPower)
       self._prevTargetPower47 = curUnitPower
       self._timeSinceLastUpdate = 0
     end
   end
-end
-
-function TargetPower47:_onClickHandler(argsTable, buttonType, isButtonDown)
-  if buttonType == "RightButton" then ToggleDropDownMenu(1, nil, TargetFrameDropDown, "cursor") end
 end
 
 function TargetPower47:_addShowOption(optionsTable)
@@ -175,7 +172,7 @@ function TargetPower47:_addShowOption(optionsTable)
       if self._mainFrame:IsVisible() then
         self._mainFrame:Hide()
       else
-        self:_setColorThenShow()
+        self:_setColor()
         self.bars:_setStatusBarValue(0.8)
       end
     end
@@ -184,12 +181,12 @@ function TargetPower47:_addShowOption(optionsTable)
 end
 
 function TargetPower47:_setUnitPowerType()
-  self._TargetPower47Type, self._TargetPower47TypeString = UnitPowerType("TARGET")
+  self._powerType, self._powerTypeString = UnitPowerType(self.unit)
 end
 
-function TargetPower47:_setColorThenShow()
+function TargetPower47:_setColor()
   self:_setUnitPowerType()
-  local upperType = string.upper(self._TargetPower47TypeString)
-  self._mainFrame.statusBar:SetStatusBarColor(unpack(_powerEventColorTable["UNIT_" .. upperType]))
-  self._mainFrame:Show()
+  local upperType = string.upper(self._powerTypeString)
+  local colorTable = _powerEventColorTable["UNIT_" .. upperType]
+  self._mainFrame.statusBar:SetStatusBarColor(unpack(colorTable))
 end

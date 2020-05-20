@@ -6,7 +6,7 @@ local TargetName47 = ZxSimpleUI:GetModule("TargetName47")
 
 -- Upvalues
 local ToggleDropDownMenu, TargetFrameDropDown = ToggleDropDownMenu, TargetFrameDropDown
-local RegisterUnitWatch = RegisterUnitWatch
+local RegisterUnitWatch, UnitName = RegisterUnitWatch, UnitName
 
 local _MODULE_NAME = "Target47"
 local _DECORATIVE_NAME = "Target"
@@ -15,11 +15,11 @@ Target47.unit = "target"
 
 function Target47:OnInitialize()
   self:__init__()
-  self:_createBars()
-  self:_setRegisterForWatch()
 end
 
 function Target47:OnEnable()
+  self:_createBars()
+  self:_setRegisterForWatch()
 end
 
 function Target47:__init__()
@@ -52,4 +52,27 @@ function Target47:_setRegisterForWatch()
     ZxSimpleUI:enableTooltip(targetFrame)
     RegisterUnitWatch(targetFrame, ZxSimpleUI:getUnitWatchState(targetFrame.unit))
   end
+end
+
+function Target47:_registerPlayerTargetChanged()
+  for _, targetFrame in pairs(self._barLists) do
+    targetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+  end
+end
+
+function Target47:_handlePlayerTargetChanged()
+  local targetName = UnitName(self.unit)
+  if targetName ~= nil and targetName ~= "" then
+    self:_showAllFrames()
+  else
+    self:_hideAllFrames()
+  end
+end
+
+function Target47:_showAllFrames()
+  for _, targetFrame in pairs(self._barLists) do targetFrame:Show() end
+end
+
+function Target47:_hideAllFrames()
+  for _, targetFrame in pairs(self._barLists) do targetFrame:Hide() end
 end
