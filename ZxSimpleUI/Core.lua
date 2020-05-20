@@ -29,10 +29,11 @@ ZxSimpleUI.UPDATE_INTERVAL_SECONDS = 16 * refreshEveryNFrame / 1000.0
 
 ZxSimpleUI.moduleOptionsTable = {}
 ZxSimpleUI.optionFrameTable = {}
+ZxSimpleUI.db = nil
 
 function ZxSimpleUI:OnInitialize()
   ---Must initialize db AFTER SavedVariables is loaded!
-  local dbName = self.ADDON_NAME .. "_DB"
+  local dbName = self.ADDON_NAME .. "_DB" -- defined in .toc file, in ## SavedVariables
   self.db = LibStub("AceDB-3.0"):New(dbName, _defaults, true)
 
   self:Print(ChatFrame1, "YO")

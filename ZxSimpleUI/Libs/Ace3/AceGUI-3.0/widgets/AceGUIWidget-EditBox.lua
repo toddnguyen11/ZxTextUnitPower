@@ -1,7 +1,7 @@
 --[[-----------------------------------------------------------------------------
 EditBox Widget
 -------------------------------------------------------------------------------]]
-local Type, Version = "EditBox", 22
+local Type, Version = "EditBox", 21
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -146,10 +146,6 @@ local methods = {
 		HideButton(self)
 	end,
 
-	["GetText"] = function(self, text)
-		return self.editbox:GetText()
-	end,
-
 	["SetLabel"] = function(self, text)
 		if text and text ~= "" then
 			self.label:SetText(text)
@@ -168,9 +164,6 @@ local methods = {
 
 	["DisableButton"] = function(self, disabled)
 		self.disablebutton = disabled
-		if disabled then
-			HideButton(self)
-		end
 	end,
 
 	["SetMaxLetters"] = function (self, num)

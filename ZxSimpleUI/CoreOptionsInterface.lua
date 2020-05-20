@@ -1,12 +1,7 @@
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local AceConfig = LibStub("AceConfig-3.0")
-local AceGUI = LibStub("AceGUI-3.0")
----LibSharedMedia
-local media = LibStub("LibSharedMedia-3.0")
 
 local CoreOptionsInterface = ZxSimpleUI:NewModule("Options", nil)
-CoreOptionsInterface._MIN_BAR_SIZE = 10
-CoreOptionsInterface._MAX_BAR_SIZE = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2)
 
 -- PRIVATE functions and variables
 ---@param key string
@@ -23,16 +18,17 @@ end
 
 function CoreOptionsInterface:SetupOptions()
   ZxSimpleUI.optionFrameTable = {}
-  LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(
-    ZxSimpleUI.ADDON_NAME, _getOptionsTable)
-  ZxSimpleUI.optionFrameTable[ZxSimpleUI.ADDON_NAME] =
-    LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
-      ZxSimpleUI.ADDON_NAME, ZxSimpleUI.DECORATIVE_NAME, nil, "general"
-    )
+  LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(ZxSimpleUI.ADDON_NAME, _getOptionsTable)
+
+  local frameRef = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(ZxSimpleUI.ADDON_NAME,
+                                                                   ZxSimpleUI.DECORATIVE_NAME,
+                                                                   nil, "general")
+  ZxSimpleUI.optionFrameTable[ZxSimpleUI.ADDON_NAME] = frameRef
 
   -- Set profile options
-  ZxSimpleUI:registerModuleOptions("Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(
-    ZxSimpleUI.db), "Profiles")
+  ZxSimpleUI:registerModuleOptions("Profiles",
+                                   LibStub("AceDBOptions-3.0"):GetOptionsTable(ZxSimpleUI.db),
+                                   "Profiles")
 end
 
 -- ########################################
@@ -84,7 +80,7 @@ function _getOptionsTable()
       }
     }
 
-    for k,v in pairs(ZxSimpleUI.moduleOptionsTable) do
+    for k, v in pairs(ZxSimpleUI.moduleOptionsTable) do
       options.args[k] = (type(v) == "function") and v() or v
     end
   end

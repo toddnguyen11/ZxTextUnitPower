@@ -1,6 +1,5 @@
 ---References:
 ---https://wowwiki.fandom.com/wiki/SecureActionButtonTemplate
-
 local ZxSimpleUI = LibStub("AceAddon-3.0"):GetAddon("ZxSimpleUI")
 local media = LibStub("LibSharedMedia-3.0")
 
@@ -41,8 +40,10 @@ function CoreBarTemplate:__init__(curDbProfile)
   }
   self.frameBackdropTable = {
     bgFile = "Interface\\DialogFrame\\UI-Tooltip-Background",
-    tile = true, tileSize = 16, edgeSize = 16,
-    insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    tile = true,
+    tileSize = 16,
+    edgeSize = 16,
+    insets = {left = 4, right = 4, top = 4, bottom = 4}
   }
   self.options = {}
 end
@@ -55,11 +56,8 @@ function CoreBarTemplate:createBar(percentValue)
   self._mainFrame:SetFrameLevel(ZxSimpleUI.DEFAULT_FRAME_LEVEL)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
   self._mainFrame:SetBackdropColor(1, 0, 0, 1)
-  self._mainFrame:SetPoint(
-    "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
-    self._curDbProfile.positionx,
-    self._curDbProfile.positiony
-  )
+  self._mainFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", self._curDbProfile.positionx,
+                           self._curDbProfile.positiony)
 
   self:_setMouseClicks()
 
@@ -80,9 +78,8 @@ function CoreBarTemplate:createBar(percentValue)
   self:_setFrameWidthHeight()
 
   self._mainFrame.mainText = self._mainFrame.statusBar:CreateFontString(nil, "BORDER")
-  self._mainFrame.mainText:SetFont(
-      media:Fetch("font", self._curDbProfile.font),
-      self._curDbProfile.fontsize, "OUTLINE")
+  self._mainFrame.mainText:SetFont(media:Fetch("font", self._curDbProfile.font),
+                                   self._curDbProfile.fontsize, "OUTLINE")
   self._mainFrame.mainText:SetTextColor(unpack(self._curDbProfile.fontcolor))
   self._mainFrame.mainText:SetPoint("CENTER", self._mainFrame.statusBar, "CENTER", 0, 0)
   self._mainFrame.mainText:SetText(string.format("%.1f%%", percentValue * 100.0))
@@ -97,77 +94,106 @@ function CoreBarTemplate:getOptionTable(decorativeName)
     self.options = {
       type = "group",
       name = decorativeName,
-      get = function (infoTable) return self:_getOption(infoTable) end,
-      set = function(infoTable, value) self:_setOption(infoTable, value) end,
+      get = function(infoTable)
+        return self:_getOption(infoTable)
+      end,
+      set = function(infoTable, value)
+        self:_setOption(infoTable, value)
+      end,
       args = {
-        header = {
-          type = "header",
-          name = decorativeName,
-          order = self:incrementOrderIndex()
-        },
+        header = {type = "header", name = decorativeName, order = self:incrementOrderIndex()},
         width = {
           name = "Bar Width",
           desc = "Bar Width Size",
           type = "range",
-          min = 0, max = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2),
+          min = 0,
+          max = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2),
           step = 2,
-          get = function (infoTable) return self:_getOption(infoTable) end,
-          set = function(infoTable, value) self:_setOption(infoTable, value) end,
-          order = self:incrementOrderIndex(),
+          get = function(infoTable)
+            return self:_getOption(infoTable)
+          end,
+          set = function(infoTable, value)
+            self:_setOption(infoTable, value)
+          end,
+          order = self:incrementOrderIndex()
         },
         height = {
           name = "Bar Height",
           desc = "Bar Height Size",
           type = "range",
-          min = 0, max = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2),
+          min = 0,
+          max = math.floor(ZxSimpleUI.SCREEN_WIDTH / 2),
           step = 2,
-          get = function (infoTable) return self:_getOption(infoTable) end,
-          set = function(infoTable, value) self:_setOption(infoTable, value) end,
-          order = self:incrementOrderIndex(),
+          get = function(infoTable)
+            return self:_getOption(infoTable)
+          end,
+          set = function(infoTable, value)
+            self:_setOption(infoTable, value)
+          end,
+          order = self:incrementOrderIndex()
         },
         positionx = {
           name = "Bar X",
           desc = "Bar X Position",
           type = "range",
-          min = 0, max = ZxSimpleUI.SCREEN_WIDTH,
+          min = 0,
+          max = ZxSimpleUI.SCREEN_WIDTH,
           step = 1,
-          get = function (infoTable) return self:_getOption(infoTable) end,
-          set = function(infoTable, value) self:_setOption(infoTable, value) end,
+          get = function(infoTable)
+            return self:_getOption(infoTable)
+          end,
+          set = function(infoTable, value)
+            self:_setOption(infoTable, value)
+          end,
           order = self:incrementOrderIndex()
         },
         positionx_center = {
           name = "Center Bar X",
           desc = "Center Bar X Position",
           type = "execute",
-          func = function(...) self:handlePositionXCenter() end,
+          func = function(...)
+            self:handlePositionXCenter()
+          end,
           order = self:incrementOrderIndex()
         },
         positiony = {
           name = "Bar Y",
           desc = "Bar Y Position",
           type = "range",
-          min = 0, max = ZxSimpleUI.SCREEN_HEIGHT,
+          min = 0,
+          max = ZxSimpleUI.SCREEN_HEIGHT,
           step = 1,
-          get = function (infoTable) return self:_getOption(infoTable) end,
-          set = function(infoTable, value) self:_setOption(infoTable, value) end,
+          get = function(infoTable)
+            return self:_getOption(infoTable)
+          end,
+          set = function(infoTable, value)
+            self:_setOption(infoTable, value)
+          end,
           order = self:incrementOrderIndex()
         },
         positiony_center = {
           name = "Center Bar Y",
           desc = "Center Bar Y Position",
           type = "execute",
-          func = function(...) self:handlePositionYCenter() end,
+          func = function(...)
+            self:handlePositionYCenter()
+          end,
           order = self:incrementOrderIndex()
         },
         fontsize = {
           name = "Bar Font Size",
           desc = "Bar Font Size",
           type = "range",
-          min = 10, max = 36,
+          min = 10,
+          max = 36,
           step = 1,
-          get = function (infoTable) return self:_getOption(infoTable) end,
-          set = function(infoTable, value) self:_setOption(infoTable, value) end,
-          order = self:incrementOrderIndex(),
+          get = function(infoTable)
+            return self:_getOption(infoTable)
+          end,
+          set = function(infoTable, value)
+            self:_setOption(infoTable, value)
+          end,
+          order = self:incrementOrderIndex()
         },
         -- LSM30_ is LibSharedMedia's custom controls
         font = {
@@ -182,8 +208,12 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           name = "Bar Font Color",
           desc = "Bar Font Color",
           type = "color",
-          get = function (infoTable) return self:_getOptionColor(infoTable) end,
-          set = function(infoTable, r, g, b, a) self:_setOptionColor(infoTable, r, g, b, a) end,
+          get = function(infoTable)
+            return self:_getOptionColor(infoTable)
+          end,
+          set = function(infoTable, r, g, b, a)
+            self:_setOptionColor(infoTable, r, g, b, a)
+          end,
           hasAlpha = false,
           order = self:incrementOrderIndex()
         },
@@ -207,8 +237,12 @@ function CoreBarTemplate:getOptionTable(decorativeName)
           name = "Bar Color",
           desc = "Bar Color",
           type = "color",
-          get = function (infoTable) return self:_getOptionColor(infoTable) end,
-          set = function(infoTable, r, g, b, a) self:_setOptionColor(infoTable, r, g, b, a) end,
+          get = function(infoTable)
+            return self:_getOptionColor(infoTable)
+          end,
+          set = function(infoTable, r, g, b, a)
+            self:_setOptionColor(infoTable, r, g, b, a)
+          end,
           hasAlpha = true,
           order = self:incrementOrderIndex()
         }
@@ -286,26 +320,20 @@ function CoreBarTemplate:_setFrameWidthHeight()
 end
 
 function CoreBarTemplate:_refreshBarFrame()
-  self._mainFrame:SetPoint(
-    "BOTTOMLEFT", UIParent, "BOTTOMLEFT",
-    self._curDbProfile.positionx,
-    self._curDbProfile.positiony
-  )
+  self._mainFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", self._curDbProfile.positionx,
+                           self._curDbProfile.positiony)
   self._mainFrame:SetBackdrop(self.frameBackdropTable)
 
   self.frameBackdropTable.edgeFile = media:Fetch("border", self._curDbProfile.border)
 
-  self._mainFrame.mainText:SetFont(
-    media:Fetch("font", self._curDbProfile.font),
-    self._curDbProfile.fontsize, "OUTLINE"
-  )
+  self._mainFrame.mainText:SetFont(media:Fetch("font", self._curDbProfile.font),
+                                   self._curDbProfile.fontsize, "OUTLINE")
   self._mainFrame.mainText:SetTextColor(unpack(self._curDbProfile.fontcolor))
 end
 
 function CoreBarTemplate:_refreshStatusBar()
   self._mainFrame.statusBar:SetStatusBarTexture(
-    media:Fetch("statusbar", self._curDbProfile.texture), "BORDER"
-  )
+    media:Fetch("statusbar", self._curDbProfile.texture), "BORDER")
   self._mainFrame.statusBar:SetStatusBarColor(unpack(self._curDbProfile.color))
 end
 
