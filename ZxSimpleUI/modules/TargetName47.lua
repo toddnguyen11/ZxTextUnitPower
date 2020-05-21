@@ -49,8 +49,10 @@ function TargetName47:OnEnable()
 end
 
 function TargetName47:__init__()
+  self.unit = "target"
+
   self._timeSinceLastUpdate = 0
-  self._prevName = UnitName("TARGET")
+  self._prevName = UnitName(self.unit)
   self._mainFrame = nil
 end
 
@@ -101,7 +103,7 @@ end
 
 ---@return string formattedName
 function TargetName47:_getFormattedName()
-  local name = UnitName("TARGET") or ""
+  local name = UnitName(self.unit) or ""
   return Utils47:getInitials(name)
 end
 
@@ -127,23 +129,13 @@ function TargetName47:_onEventHandler(argsTable, event, unit, ...)
 end
 
 function TargetName47:_handleUnitHealthEvent(curUnitHealth)
-  curUnitHealth = curUnitHealth or UnitHealth("TARGET")
-  if curUnitHealth > 0 then
-    self:_setFormattedName()
-    self._mainFrame:Show()
-  else
-    self._mainFrame:Hide()
-  end
+  curUnitHealth = curUnitHealth or UnitHealth(self.unit)
+  if curUnitHealth > 0 then self:_setFormattedName() end
 end
 
 function TargetName47:_handlePlayerTargetChanged()
-  local TargetName47 = UnitName("TARGET")
-  if TargetName47 ~= nil and TargetName47 ~= "" then
-    self:_setFormattedName()
-    self._mainFrame:Show()
-  else
-    self._mainFrame:Hide()
-  end
+  local curUnitName = UnitName(self.unit)
+  if curUnitName ~= nil and curUnitName ~= "" then self:_setFormattedName() end
 end
 
 function TargetName47:_setFormattedName()
