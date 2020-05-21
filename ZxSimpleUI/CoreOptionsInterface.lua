@@ -46,39 +46,27 @@ function _getOptionsTable()
         general = {
           type = "group",
           name = "", -- this is required!
-          args = {
-            openPlayerHealth = {
-              name = "Player Health",
-              type = "execute",
-              func = function()
-                InterfaceOptionsFrame_OpenToCategory(ZxSimpleUI.optionFrameTable.PlayerHealth)
-              end
-            },
-            openPlayerPower = {
-              name = "Player Power",
-              type = "execute",
-              func = function()
-                InterfaceOptionsFrame_OpenToCategory(ZxSimpleUI.optionFrameTable.PlayerPower)
-              end
-            },
-            openTargetHealth = {
-              name = "Target Health",
-              type = "execute",
-              func = function()
-                InterfaceOptionsFrame_OpenToCategory(ZxSimpleUI.optionFrameTable.TargetHealth)
-              end
-            },
-            openTargetPower = {
-              name = "Target Power",
-              type = "execute",
-              func = function()
-                InterfaceOptionsFrame_OpenToCategory(ZxSimpleUI.optionFrameTable.TargetPower)
-              end
-            }
-          }
+          args = {}
         }
       }
     }
+
+    local frameLevel = 7
+    for moduleKey, val in pairs(ZxSimpleUI.optionFrameTable) do
+      if moduleKey ~= ZxSimpleUI.ADDON_NAME then
+        options.args.general.args[moduleKey] = {
+          type = "execute",
+          name = val.name,
+          func = function()
+            InterfaceOptionsFrame_OpenToCategory(val)
+          end,
+          order = frameLevel
+        }
+        if moduleKey == "Profiles" then
+          options.args.general.args[moduleKey]["order"] = frameLevel - 2
+        end
+      end
+    end
 
     for k, v in pairs(ZxSimpleUI.moduleOptionsTable) do
       options.args[k] = (type(v) == "function") and v() or v
