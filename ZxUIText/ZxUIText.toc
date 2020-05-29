@@ -1,0 +1,12 @@
+## Interface: 30300
+## Title: ZxUIText
+## Author: ZxScepter
+## Notes: Change fonts of a few UI elements.
+## Version: 1.0
+## SavedVariables: ZxUIText_DB
+
+embeds.xml
+Core.lua
+
+core\core.xml
+modules\modules.xml
