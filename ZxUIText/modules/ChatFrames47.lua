@@ -11,7 +11,7 @@ ChatFrames47.MAX_CHATFRAMES = 10
 ChatFrames47.FACTORY_DEFAULT_FONT = "Arial Narrow"
 ChatFrames47.KEY_SUFFIXES = {"", "EditBox", "EditBoxHeader"}
 
-local _defaults = {profile = {enabledToggle = true, font = "Open Sans"}}
+local _defaults = {profile = {enabledToggle = true, font = "Oxygen"}}
 
 function ChatFrames47:OnInitialize()
   self.db = ZxUIText.db:RegisterNamespace(_MODULE_NAME, _defaults)

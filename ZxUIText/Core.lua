@@ -7,12 +7,14 @@ local ZxUIText = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceConsole-3.0")
 ---LibSharedMedia registers
 local media = LibStub("LibSharedMedia-3.0")
 local fontsFilepath = "Interface\\AddOns\\ZxUIText\\fonts\\"
-media:Register("font", "Open Sans", fontsFilepath .. "OpenSansRegular.ttf")
-media:Register("font", "Open Sans Bold", fontsFilepath .. "OpenSansBold.ttf")
-media:Register("font", "PT Sans", fontsFilepath .. "PTSansRegular.ttf")
-media:Register("font", "PT Sans Bold", fontsFilepath .. "PTSansBold.ttf")
-media:Register("font", "Roboto", fontsFilepath .. "RobotoRegular.ttf")
-media:Register("font", "Roboto Bold", fontsFilepath .. "RobotoBold.ttf")
+media:Register("font", "Open Sans", fontsFilepath .. "Open_Sans\\OpenSans-Regular.ttf")
+media:Register("font", "Open Sans Bold", fontsFilepath .. "Open_Sans\\OpenSans-Bold.ttf")
+media:Register("font", "Oxygen", fontsFilepath .. "Oxygen\\Oxygen-Regular.ttf")
+media:Register("font", "Oxygen Bold", fontsFilepath .. "Oxygen\\Oxygen-Bold.ttf")
+media:Register("font", "PT Sans", fontsFilepath .. "PT_Sans\\PTSans-Regular.ttf")
+media:Register("font", "PT Sans Bold", fontsFilepath .. "PT_Sans\\PTSans-Bold.ttf")
+media:Register("font", "Roboto", fontsFilepath .. "Roboto\\Roboto-Regular.ttf")
+media:Register("font", "Roboto Bold", fontsFilepath .. "Roboto\\Roboto-Bold.ttf")
 
 --- All this below is needed!
 ZxUIText.ADDON_NAME = ADDON_NAME
