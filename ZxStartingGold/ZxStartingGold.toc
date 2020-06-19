@@ -2,5 +2,10 @@
 ## Title: Zx Starting Gold
 ## Author: ZxScepter
 ## Notes: Display starting gold.
+## Version: 0.1
+## SavedVariables: ZxStartingGold_DB
 
-ZxStartingGoldCore.lua
+embeds.xml
+Core.lua
+core\core.xml
+modules\modules.xml
