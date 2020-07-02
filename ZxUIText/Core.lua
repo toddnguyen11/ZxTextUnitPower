@@ -75,7 +75,7 @@ end
 ---@param module string
 ---@param isEnabled boolean
 function ZxUIText:setModuleEnabledState(module, isEnabled)
-  local oldEnabledValue = self.db.profile["modules"][module]["enabled"]
+  local oldEnabledValue = self.db.profile.modules[module].enabled
   self.db.profile["modules"][module]["enabled"] = isEnabled
   if oldEnabledValue ~= isEnabled then
     if isEnabled then

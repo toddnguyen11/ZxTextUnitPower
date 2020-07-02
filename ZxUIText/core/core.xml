@@ -1,4 +1,8 @@
 <Ui xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
-  <Script file="CoreOptionsInterface.lua" />
+  <Script file="Utils47.lua" />
+  <Script file="FramePool47.lua" />
+  <Script file="Animations47.lua" />
+  <Script file="CoreFactory47.lua" />
+  <Script file="CoreOptionsRegister47.lua" />
   <Script file="CoreOptions47.lua" />
 </Ui>
