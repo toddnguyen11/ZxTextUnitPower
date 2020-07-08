@@ -209,6 +209,7 @@ function CoreOptionsRegister47.DisableInCombat:_disableInCombat()
   for key, val in pairs(MainAddon.moduleOptionsTable) do
     if key:find("Profile") then
       val["args"]["reset"]["disabled"] = true
+      val["confirm"] = true
     else
       self._prevDisableOptions[key] = {}
       for argkey, argval in pairs(val.args) do
@@ -223,6 +224,7 @@ function CoreOptionsRegister47.DisableInCombat:_enableOutOfCombat()
   for key, val in pairs(MainAddon.moduleOptionsTable) do
     if key:find("Profile") then
       val["args"]["reset"]["disabled"] = nil
+      val["confirm"] = nil
     else
       for argkey, argval in pairs(val.args) do
         argval["disabled"] = self._prevDisableOptions[key][argkey]
