@@ -10,7 +10,6 @@ ZxUIText.optionTables[CoreOptions47.OPTION_NAME] = CoreOptions47
 ---@param currentModule table
 function CoreOptions47:__init__(currentModule)
   self._currentModule = currentModule
-  self._curDbProfile = self._currentModule.db.profile
   self._orderIndex = ZxUIText.DEFAULT_ORDER_INDEX
 end
 
@@ -24,7 +23,7 @@ end
 ---Ref: https://www.wowace.com/projects/ace3/pages/ace-config-3-0-options-tables#title-4-1
 function CoreOptions47:getOption(info)
   local keyLeafNode = info[#info]
-  return self._curDbProfile[keyLeafNode]
+  return self._currentModule.db.profile[keyLeafNode]
 end
 
 ---@param info table
@@ -32,7 +31,7 @@ end
 ---Ref: https://www.wowace.com/projects/ace3/pages/ace-config-3-0-options-tables#title-4-1
 function CoreOptions47:setOption(info, value)
   local keyLeafNode = info[#info]
-  self._curDbProfile[keyLeafNode] = value
+  self._currentModule.db.profile[keyLeafNode] = value
   self._currentModule:refreshConfig()
 end
 
