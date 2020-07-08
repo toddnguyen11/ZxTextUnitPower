@@ -25,8 +25,6 @@ local _defaults = {
 
 function ActionBarFont:OnInitialize()
   self.db = ZxUIText.db:RegisterNamespace(_MODULE_NAME, _defaults)
-  self._curDbProfile = self.db.profile
-
   self:__init__()
 
   self:SetEnabledState(ZxUIText:getModuleEnabledState(_MODULE_NAME))
@@ -61,7 +59,7 @@ function ActionBarFont:refreshConfig()
 end
 
 function ActionBarFont:handleEnableToggle()
-  ZxUIText:setModuleEnabledState(_MODULE_NAME, self._curDbProfile.enabledToggle)
+  ZxUIText:setModuleEnabledState(_MODULE_NAME, self.db.profile.enabledToggle)
 end
 
 function ActionBarFont:printGlobalChatFrameKeys()
@@ -93,9 +91,9 @@ end
 ---@return string
 function ActionBarFont:getFontFlags()
   local s = ""
-  if self._curDbProfile.outline then s = s .. "OUTLINE, " end
-  if self._curDbProfile.thickoutline then s = s .. "THICKOUTLINE, " end
-  if self._curDbProfile.monochrome then s = s .. "MONOCHROME, " end
+  if self.db.profile.outline then s = s .. "OUTLINE, " end
+  if self.db.profile.thickoutline then s = s .. "THICKOUTLINE, " end
+  if self.db.profile.monochrome then s = s .. "MONOCHROME, " end
   if s ~= "" then s = string.sub(s, 0, (string.len(s) - 2)) end
   return s
 end
@@ -172,8 +170,8 @@ function ActionBarFont:_setHotkeyFont()
   for stub, numButtons in pairs(self._defaultStubs) do
     for i = 1, numButtons do
       local localKey = stub .. i .. "HotKey"
-      _G[localKey]:SetFont(media:Fetch("font", self._curDbProfile.font),
-        self._curDbProfile.fontsize, self:getFontFlags())
+      _G[localKey]:SetFont(media:Fetch("font", self.db.profile.font),
+        self.db.profile.fontsize, self:getFontFlags())
     end
   end
 end
@@ -183,7 +181,7 @@ function ActionBarFont:_resetFactoryDefaultFonts()
     for i = 1, numButtons do
       local localKey = stub .. i .. "HotKey"
       _G[localKey]:SetFont(media:Fetch("font", self.FACTORY_DEFAULT_FONT),
-        self._curDbProfile.fontsize, self:getFontFlags())
+        self.db.profile.fontsize, self:getFontFlags())
     end
   end
 end

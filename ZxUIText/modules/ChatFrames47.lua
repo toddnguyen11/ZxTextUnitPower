@@ -15,8 +15,6 @@ local _defaults = {profile = {enabledToggle = true, font = "Oxygen"}}
 
 function ChatFrames47:OnInitialize()
   self.db = ZxUIText.db:RegisterNamespace(_MODULE_NAME, _defaults)
-  self._curDbProfile = self.db.profile
-
   self:__init__()
 
   self:SetEnabledState(ZxUIText:getModuleEnabledState(_MODULE_NAME))
@@ -42,7 +40,7 @@ function ChatFrames47:refreshConfig()
 end
 
 function ChatFrames47:handleEnableToggle()
-  ZxUIText:setModuleEnabledState(_MODULE_NAME, self._curDbProfile.enabledToggle)
+  ZxUIText:setModuleEnabledState(_MODULE_NAME, self.db.profile.enabledToggle)
 end
 
 function ChatFrames47:printGlobalChatFrameKeys()
@@ -124,7 +122,7 @@ function ChatFrames47:_setChatFrameFonts()
     local str1 = "ChatFrame" .. i
     for _, key in ipairs(self.KEY_SUFFIXES) do
       local k1 = str1 .. key
-      _G[k1]:SetFont(media:Fetch("font", self._curDbProfile.font), 14, "")
+      _G[k1]:SetFont(media:Fetch("font", self.db.profile.font), 14, "")
     end
   end
 end
